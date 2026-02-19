@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCM 구매본부 경영현황 2026년</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #f0f2f5;
+    --card: #ffffff;
+    --card-hover: #fafbfc;
+    --border: #e0e4e8;
+    --text: #1a2332;
+    --text-sub: #6b7a8d;
+    --accent: #1976d2;
+    --accent2: #2e7d32;
+    --accent3: #e65100;
+    --accent4: #c62828;
+    --accent5: #7b1fa2;
+    --positive: #2e7d32;
+    --negative: #c62828;
+    --warning: #e65100;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 16px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .header {
+    text-align: center;
+    padding: 16px 0 8px;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 14px;
+  }
+  .header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .header .subtitle {
+    color: var(--text-sub);
+    font-size: 12px;
+    margin-top: 4px;
+  }
+  .header .update-info {
+    color: var(--text-sub);
+    font-size: 11px;
+    margin-top: 2px;
+  }
+
+  /* KPI Cards */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .kpi-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(25,118,210,0.15);
+    border-color: var(--accent);
+    background: linear-gradient(135deg, rgba(25,118,210,0.03), rgba(25,118,210,0.06));
+  }
+  .kpi-card .kpi-label {
+    font-size: 11px;
+    color: var(--text-sub);
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .kpi-card .kpi-value {
+    font-size: 26px;
+    font-weight: 700;
+    margin: 6px 0 4px;
+  }
+  .kpi-card .kpi-sub {
+    font-size: 11px;
+    color: var(--text-sub);
+  }
+  .kpi-card .kpi-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-top: 3px;
+  }
+  .kpi-card .kpi-icon {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    font-size: 26px;
+    opacity: 0.12;
+  }
+  .kpi-detail {
+    margin-top: 10px;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .kpi-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+  }
+  .kpi-detail-label {
+    color: var(--text-sub);
+    font-weight: 500;
+  }
+  .kpi-detail-value {
+    font-weight: 600;
+    color: var(--text);
+  }
+  .badge-good { background: rgba(46,125,50,0.1); color: var(--positive); }
+  .badge-warn { background: rgba(230,81,0,0.1); color: var(--warning); }
+  .badge-bad { background: rgba(198,40,40,0.1); color: var(--negative); }
+  .kpi-accent1 { border-left: 3px solid var(--accent); }
+  .kpi-accent2 { border-left: 3px solid var(--accent2); }
+  .kpi-accent3 { border-left: 3px solid var(--accent3); }
+  .kpi-accent4 { border-left: 3px solid var(--accent4); }
+  .kpi-accent5 { border-left: 3px solid var(--accent5); }
+
+  /* Section */
+  .section {
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    padding-left: 10px;
+    border-left: 3px solid var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .section-title .tag {
+    font-size: 9px;
+    background: rgba(25,118,210,0.08);
+    color: var(--accent);
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-weight: 500;
+  }
+
+  /* Chart Grid */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .chart-grid.cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .chart-grid.cols-1 {
+    grid-template-columns: 1fr;
+  }
+  .chart-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    transition: box-shadow 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .chart-box:hover {
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  }
+  .chart-box.wide {
+    grid-column: span 2;
+  }
+  .chart-box h3 {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .chart-box h3 span {
+    font-weight: 400;
+    color: var(--text-sub);
+    font-size: 10px;
+    margin-left: 4px;
+  }
+  .chart-container {
+    position: relative;
+    width: 100%;
+    height: 200px;
+  }
+  .chart-container.tall {
+    height: 240px;
+  }
+  .inv-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .inv-row > .chart-box {
+    display: flex;
+    flex-direction: column;
+  }
+  .inv-row > .chart-box .chart-container {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+  }
+  .chart-box-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .chart-box-stack .chart-box.compact {
+    flex: 1;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+  }
+  .chart-box-stack .chart-box.compact h3 {
+    margin-bottom: 4px;
+  }
+  .chart-box-stack .chart-box.compact .chart-container {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+  }
+
+  /* Table Styles */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  .data-table th {
+    background: rgba(25,118,210,0.06);
+    color: var(--accent);
+    padding: 6px 8px;
+    text-align: right;
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+  }
+  .data-table th:first-child,
+  .data-table th:nth-child(2) {
+    text-align: left;
+  }
+  .data-table td {
+    padding: 5px 8px;
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .data-table td:first-child,
+  .data-table td:nth-child(2) {
+    text-align: left;
+    font-weight: 500;
+  }
+  .data-table tr:hover td {
+    background: rgba(25,118,210,0.03);
+  }
+  .val-pos { color: var(--positive); }
+  .val-neg { color: var(--negative); }
+  .val-warn { color: var(--warning); }
+
+  /* Toolbar */
+  .toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: 'Noto Sans KR', sans-serif;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--card);
+    color: var(--text);
+  }
+  .btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+  .btn-upload { color: var(--accent2); border-color: var(--accent2); }
+  .btn-upload:hover { background: rgba(46,125,50,0.06); }
+  .btn-download { color: var(--accent); border-color: var(--accent); }
+  .btn-download:hover { background: rgba(25,118,210,0.06); }
+  .btn svg { width: 14px; height: 14px; fill: currentColor; }
+  #fileInput { display: none; }
+
+  /* Tab Navigation */
+  .tab-nav {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 14px;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 0;
+  }
+  .tab-btn {
+    padding: 8px 20px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: var(--text-sub);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover {
+    color: var(--accent);
+    background: rgba(25,118,210,0.04);
+  }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .tab-panel {
+    display: none;
+  }
+  .tab-panel.active {
+    display: block;
+  }
+
+  @media (max-width: 900px) {
+    .chart-grid { grid-template-columns: 1fr; }
+    .chart-box.wide { grid-column: span 1; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .tab-btn { padding: 6px 12px; font-size: 11px; }
+  }
+  @media (max-width: 600px) {
+    .kpi-grid { grid-template-columns: 1fr; }
+    body { padding: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>SCM 구매본부 경영현황 2026년</h1>
+  <div class="subtitle">Monthly Performance Dashboard</div>
+  <div class="update-info">Data: 2026년 1월 실마감 기준 | 전년(2025) 실적 대비</div>
+</div>
+
+<!-- Hidden file input -->
+<input type="file" id="fileInput" accept=".xlsx,.xls">
+
+<!-- Tab Navigation -->
+<div class="tab-nav">
+  <button class="tab-btn active" data-tab="summary">요약</button>
+  <button class="tab-btn" data-tab="inventory">재고현황</button>
+  <button class="tab-btn" data-tab="tcr">TCR</button>
+  <button class="tab-btn" data-tab="comp">보상 / 사용소진</button>
+  <button class="tab-btn" data-tab="etc">기타</button>
+</div>
+
+<!-- 요약 -->
+<div class="tab-panel active" id="panel-summary">
+  <div class="toolbar">
+    <button class="btn btn-upload" onclick="document.getElementById('fileInput').click()"><svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>엑셀 업로드</button>
+    <button class="btn btn-download" onclick="downloadSection('summary')"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>엑셀 다운로드</button>
+  </div>
+  <div class="kpi-grid" id="kpiGrid"></div>
+</div>
+
+<!-- 재고현황 -->
+<div class="tab-panel" id="panel-inventory">
+  <div class="toolbar">
+    <button class="btn btn-upload" onclick="document.getElementById('fileInput').click()"><svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>엑셀 업로드</button>
+    <button class="btn btn-download" onclick="downloadSection('inventory')"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>엑셀 다운로드</button>
+  </div>
+  <div class="section">
+    <div class="section-title">재고금액 추이 <span class="tag">Inventory</span></div>
+    <div class="inv-row" style="height:420px;">
+      <div class="chart-box">
+        <h3>SCM 총 재고금액 추이 <span>(억원, 원료+부자재 합산)</span></h3>
+        <div class="chart-container"><canvas id="chartInventoryTotal"></canvas></div>
+      </div>
+      <div class="chart-box-stack">
+        <div class="chart-box compact">
+          <h3>원료 재고금액 추이 <span>(억원)</span></h3>
+          <div class="chart-container"><canvas id="chartInvRaw"></canvas></div>
+        </div>
+        <div class="chart-box compact">
+          <h3>부자재 재고금액 추이 <span>(억원)</span></h3>
+          <div class="chart-container"><canvas id="chartInvSub"></canvas></div>
+        </div>
+      </div>
+    </div>
+    <div class="chart-grid cols-3" style="margin-top:10px;">
+      <div class="chart-box">
+        <h3>SCM 재고 구성비 <span>(합산)</span></h3>
+        <div class="chart-container"><canvas id="chartInventoryCompo"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h3>원료 재고 구성비</h3>
+        <div class="chart-container"><canvas id="chartCompoRaw"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h3>부자재 재고 구성비</h3>
+        <div class="chart-container"><canvas id="chartCompoSub"></canvas></div>
+      </div>
+    </div>
+    <div class="chart-grid cols-1" style="margin-top:10px;">
+      <div class="chart-box">
+        <h3>구매 vs 출고 금액 <span>(억원)</span></h3>
+        <div class="chart-container"><canvas id="chartPurchaseRelease"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">OKR - 부동재고 <span class="tag">Idle Inventory</span></div>
+    <div class="chart-grid">
+      <div class="chart-box wide">
+        <h3>부동재고 목표 vs 실적 <span>(억원, SCM 전체)</span></h3>
+        <div class="chart-container"><canvas id="chartIdleInventory"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h3>원료 부동재고 목표 vs 실적 <span>(억원)</span></h3>
+        <div class="chart-container"><canvas id="chartIdleRaw"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h3>부자재 부동재고 목표 vs 실적 <span>(억원)</span></h3>
+        <div class="chart-container"><canvas id="chartIdleSub"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">OKR - 재고회전일 <span class="tag">Inventory Turnover</span></div>
+    <div class="chart-grid">
+      <div class="chart-box wide">
+        <h3>재고회전일 추이 <span>(일)</span></h3>
+        <div class="chart-container"><canvas id="chartTurnover"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TCR -->
+<div class="tab-panel" id="panel-tcr">
+  <div class="toolbar">
+    <button class="btn btn-upload" onclick="document.getElementById('fileInput').click()"><svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>엑셀 업로드</button>
+    <button class="btn btn-download" onclick="downloadSection('tcr')"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>엑셀 다운로드</button>
+  </div>
+  <div class="section">
+    <div class="section-title">OKR - TCR (Total Cost Reduction) <span class="tag">Cost Saving</span></div>
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>TCR 전체 목표 vs 실적 <span>(억원)</span></h3>
+        <div class="chart-container"><canvas id="chartTCR"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h3>TCR 원료 상세 <span>(억원, 인상/인하/대체)</span></h3>
+        <div class="chart-container"><canvas id="chartTCRRaw"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 보상/사용소진 -->
+<div class="tab-panel" id="panel-comp">
+  <div class="toolbar">
+    <button class="btn btn-upload" onclick="document.getElementById('fileInput').click()"><svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>엑셀 업로드</button>
+    <button class="btn btn-download" onclick="downloadSection('comp')"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>엑셀 다운로드</button>
+  </div>
+  <div class="section">
+    <div class="section-title">OKR - 보상 / 사용소진 <span class="tag">Compensation</span></div>
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>보상 목표 vs 실적 <span>(억원)</span></h3>
+        <div class="chart-container"><canvas id="chartCompensation"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h3>사용소진(부자재) 목표 vs 실적 <span>(억원)</span></h3>
+        <div class="chart-container"><canvas id="chartConsumption"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 기타 -->
+<div class="tab-panel" id="panel-etc">
+  <div class="toolbar">
+    <button class="btn btn-upload" onclick="document.getElementById('fileInput').click()"><svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>엑셀 업로드</button>
+    <button class="btn btn-download" onclick="downloadSection('etc')"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>엑셀 다운로드</button>
+  </div>
+  <div class="section">
+    <div class="section-title">자체폐기 / 원납기 <span class="tag">Disposal</span></div>
+    <div class="chart-grid cols-3">
+      <div class="chart-box">
+        <h3>자체폐기 실적 <span>(억원)</span></h3>
+        <div class="chart-container"><canvas id="chartDisposal"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h3>원납기 준수율 <span>(%)</span></h3>
+        <div class="chart-container"><canvas id="chartOntime"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h3>원납기 미준수 건수</h3>
+        <div class="chart-container"><canvas id="chartOntimeCount"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">해외법인 매출 <span class="tag">Overseas Sales</span></div>
+    <div class="chart-grid">
+      <div class="chart-box wide">
+        <h3>해외법인 월별 매출 실적 <span>(억원)</span></h3>
+        <div class="chart-container tall"><canvas id="chartOverseas"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">발주건수 / 인원현황 <span class="tag">Operations</span></div>
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>부서별 발주건수 <span>(1월)</span></h3>
+        <div class="chart-container"><canvas id="chartOrders"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h3>인당 발주건수 / 인원현황</h3>
+        <div class="chart-container"><canvas id="chartHeadcount"></canvas></div>
+      </div>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+const months = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+const B = 100000000; // 억원 단위 변환
+
+// 재고현황 데이터
+const data = {
+  // 총 구매금액
+  scmPurchase:   { prev: 856089879088, avg: 71340823257, m: [85256107903,0,0,0,0,0,0,0,0,0,0,0] },
+  scmRelease:    { prev: 842571836943, avg: 70196670403, m: [75235511546,0,0,0,0,0,0,0,0,0,0,0] },
+  scmInventory:  { prev: 74248280897,  avg: 75218412811, m: [84268144093,0,0,0,0,0,0,0,0,0,0,0],
+    prev_m: [70633416241,79126307250,76695682017,84355936756,79814895786,74093763082,70923469500,69592977532,73741630874,77185572461,72209021331,74248280897] },
+  // 재고 구성
+  invNormal:  { prev: 54543532326, m: [63684356437,0,0,0,0,0,0,0,0,0,0,0] },
+  invSlow:    { prev: 8164600070,  m: [8344653635,0,0,0,0,0,0,0,0,0,0,0] },
+  invDead:    { prev: 11540148501, m: [12239134021,0,0,0,0,0,0,0,0,0,0,0] },
+  // 원자재 재고
+  rawInventory: { prev: 21356048905, m: [22794583786,0,0,0,0,0,0,0,0,0,0,0],
+    prev_m: [18840270446,22825542445,23079130237,25107476494,21919146326,20549900245,19528779593,20126614372,20858976949,20979278992,22153588294,21356048905] },
+  rawNormal:    { prev: 17658249579, m: [19183186398,0,0,0,0,0,0,0,0,0,0,0] },
+  rawSlow:      { prev: 1573356114,  m: [1510659706,0,0,0,0,0,0,0,0,0,0,0] },
+  rawDead:      { prev: 2124443212,  m: [2100737682,0,0,0,0,0,0,0,0,0,0,0] },
+  // 부자재 재고
+  subInventory: { prev: 52892231992, m: [61473560307,0,0,0,0,0,0,0,0,0,0,0],
+    prev_m: [51793145795,56300764805,53616551780,59248460262,57895749460,53543862837,51394689907,49466363160,52882653925,56206293469,50055433037,52892231992] },
+  subNormal:    { prev: 36885282747, m: [44501170039,0,0,0,0,0,0,0,0,0,0,0] },
+  subSlow:      { prev: 6591243956,  m: [6833993929,0,0,0,0,0,0,0,0,0,0,0] },
+  subDead:      { prev: 9415705289,  m: [10138396339,0,0,0,0,0,0,0,0,0,0,0] },
+  // 원자재 구매/출고
+  rawPurchase:  { prev: 280674738383, m: [29413844844,0,0,0,0,0,0,0,0,0,0,0] },
+  rawRelease:   { prev: 276251691275, m: [27974576794,0,0,0,0,0,0,0,0,0,0,0] },
+  subPurchase:  { prev: 575415140705, m: [55842263059,0,0,0,0,0,0,0,0,0,0,0] },
+  subRelease:   { prev: 566320145668, m: [47260934752,0,0,0,0,0,0,0,0,0,0,0] },
+
+  // OKR 부동재고
+  idleSCM_target: [12150000000,13150000000,14150000000,13100000000,12600000000,12100000000,11600000000,11100000000,10600000000,10050000000,9550000000,9500000000],
+  idleSCM_actual: [12239134021,0,0,0,0,0,0,0,0,0,0,0],
+  idleSCM_prevFinal: 11540148501,
+  idleRaw_target: [2150000000,2150000000,2150000000,2100000000,2100000000,2100000000,2100000000,2100000000,2100000000,2050000000,2050000000,2000000000],
+  idleRaw_actual: [2100737682,0,0,0,0,0,0,0,0,0,0,0],
+  idleSub_target: [10000000000,11000000000,12000000000,11000000000,10500000000,10000000000,9500000000,9000000000,8500000000,8000000000,7500000000,7500000000],
+  idleSub_actual: [10138396339,0,0,0,0,0,0,0,0,0,0,0],
+
+  // 재고회전일
+  turnSCM_target: [34.77,34.02,33.27,33.27,32.52,32.27,31.52,31.52,30.76,30.64,29.89,29.01],
+  turnSCM_actual: [32.78,0,0,0,0,0,0,0,0,0,0,0],
+  turnSCM_prev: 33.82,
+  turnRaw_target: [28,28,28,28,28,27,27,27,27,26.5,26.5,26],
+  turnRaw_actual: [26.67,0,0,0,0,0,0,0,0,0,0,0],
+  turnSub_target: [37,36,35,35,34,34,33,33,32,32,31,30],
+  turnSub_actual: [36.11,0,0,0,0,0,0,0,0,0,0,0],
+
+  // TCR
+  tcrSCM_target: [1470000000,1580000000,1673000000,1993000000,2095000000,2016000000,2386000000,2336000000,2296000000,2448000000,2379000000,2328000000],
+  tcrSCM_actual: [1951838821,0,0,0,0,0,0,0,0,0,0,0],
+  tcrSCM_prevFinal: 7036136675,
+  // TCR 원료 상세
+  tcrRaw_target: [1220000000,1330000000,1423000000,1693000000,1745000000,1666000000,2036000000,1986000000,1996000000,2198000000,2129000000,2078000000],
+  tcrRaw_actual: [1751715484,0,0,0,0,0,0,0,0,0,0,0],
+  tcrRaw_up:   [829801781,0,0,0,0,0,0,0,0,0,0,0],
+  tcrRaw_down: [1271517265,0,0,0,0,0,0,0,0,0,0,0],
+  tcrRaw_alt:  [1310000000,0,0,0,0,0,0,0,0,0,0,0],
+  // TCR 부자재
+  tcrSub_target: [250000000,250000000,250000000,300000000,350000000,350000000,350000000,350000000,300000000,250000000,250000000,250000000],
+  tcrSub_actual: [200123337,0,0,0,0,0,0,0,0,0,0,0],
+
+  // 보상
+  compSCM_target: [175000000,175000000,180000000,230000000,230000000,230000000,230000000,230000000,230000000,230000000,230000000,180000000],
+  compSCM_actual: [183214597,0,0,0,0,0,0,0,0,0,0,0],
+  compSCM_prev: 3245354103,
+  // 사용소진
+  consSCM_target: [500000000,500000000,600000000,600000000,700000000,800000000,800000000,700000000,700000000,700000000,700000000,700000000],
+  consSCM_actual: [911472251,0,0,0,0,0,0,0,0,0,0,0],
+  consSCM_prev: 9716816559,
+
+  // 자체폐기
+  dispSCM:  { prev: 2167254576, m: [119964282,0,0,0,0,0,0,0,0,0,0,0] },
+  dispRaw:  { prev: 663797927,  m: [66764302,0,0,0,0,0,0,0,0,0,0,0] },
+  dispSub:  { prev: 1503456649, m: [53199980,0,0,0,0,0,0,0,0,0,0,0] },
+
+  // 원납기준수율
+  ontimeSCM_target: 0.95,
+  ontimeSCM_actual: [0.9541,0,0,0,0,0,0,0,0,0,0,0],
+  ontimeSCM_prev: 0.9825,
+  ontimeRaw_actual: [0.9994,0,0,0,0,0,0,0,0,0,0,0],
+  ontimeRaw_prev: 1.0,
+  ontimeSub_actual: [0.9547,0,0,0,0,0,0,0,0,0,0,0],
+  ontimeSub_prev: 0.9825,
+  ontimeTotal: 1742,
+  ontimeRawFail: 1,
+  ontimeSubFail: 79,
+
+  // 해외법인
+  overseasActual: {
+    shanghai:  { prev: 15305523706, m: [1644378577,0,0,0,0,0,0,0,0,0,0,0] },
+    guangzhou: { prev: 5191341274,  m: [626413164,0,0,0,0,0,0,0,0,0,0,0] },
+    nuworld:   { prev: 6304964152,  m: [991673734,0,0,0,0,0,0,0,0,0,0,0] },
+    indo:      { prev: 8085223853,  m: [776146257,0,0,0,0,0,0,0,0,0,0,0] },
+    thai:      { prev: 2636008529,  m: [144618735,0,0,0,0,0,0,0,0,0,0,0] },
+  },
+  overseasTarget: {
+    shanghai:  [1154953587,1109334387,1206171887,1080716206,1007637226,884258645,929443335,907212935,1109334387,1359883367,1210182967,906788645],
+    guangzhou: [266362810,251156410,251156410,255679064,214582517,246295571,228248644,205439044,251156410,292252956,269443356,246295571],
+    nuworld:   [366847522,363045922,363045922,333843347,297037573,314033398,334337085,330535485,363045922,399851697,396050097,314033398],
+    indo:      [272066240,264463040,264463040,251996200,216719760,242848120,216188740,253658940,263338040,298614480,287209680,391723120],
+    thai:      [279999318,276197718,276197718,255060889,226320860,201382431,217653246,262726646,275072718,303812747,300011147,200257431],
+  },
+  overseasTotalTarget: [2340229476,2264197476,2361034976,2177295706,1962297935,1888818165,1925871050,1959573050,2261947476,2654415247,2462897247,2059098165],
+  overseasTotalActual: [4183230467,0,0,0,0,0,0,0,0,0,0,0],
+
+  // 발주건수
+  orderTotal:  { prev: 176851, m: [16646,0,0,0,0,0,0,0,0,0,0,0] },
+  orderRaw:    { prev: 68420,  m: [6451,0,0,0,0,0,0,0,0,0,0,0] },
+  orderSub:    { prev: 108431, m: [10195,0,0,0,0,0,0,0,0,0,0,0] },
+  orderByDept: { rawBiz: 1755, rawPur: 4696, pkgPur: 10195 },
+  orderPerPerson: { rawPur: 469.6, pkgPur: 536.6 },
+  headcount: { pkg1: 11, pkg2: 11, rawPur: 11, total: 33 },
+};
+
+// Utility
+const toEok = v => (v / B).toFixed(0);
+const toEok1 = v => (v / B).toFixed(1);
+const pct = v => (v * 100).toFixed(1) + '%';
+const num = v => Number(v).toLocaleString();
+const activeMonths = data.scmInventory.m.filter(v => v > 0).length;
+
+// ===== Chart.js defaults =====
+Chart.defaults.color = '#6b7a8d';
+Chart.defaults.borderColor = 'rgba(0,0,0,0.06)';
+Chart.defaults.font.family = "'Noto Sans KR', sans-serif";
+Chart.defaults.font.size = 10;
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.pointStyle = 'rectRounded';
+Chart.defaults.plugins.legend.labels.pointStyleWidth = 10;
+Chart.defaults.plugins.legend.labels.font = { size: 10 };
+Chart.defaults.plugins.tooltip.backgroundColor = '#ffffff';
+Chart.defaults.plugins.tooltip.titleColor = '#1a2332';
+Chart.defaults.plugins.tooltip.bodyColor = '#1a2332';
+Chart.defaults.plugins.tooltip.borderColor = '#e0e4e8';
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.cornerRadius = 6;
+Chart.defaults.plugins.tooltip.padding = 8;
+
+const noDataLabel = { id: 'noDataLabel', afterDraw(chart) {} };
+
+// ===== KPI CARDS =====
+function detailHtml(rows) {
+  if (!rows || rows.length === 0) return '';
+  return '<div class="kpi-detail">' + rows.map(r =>
+    `<div class="kpi-detail-row"><span class="kpi-detail-label">${r[0]}</span><span class="kpi-detail-value">${r[1]}</span></div>`
+  ).join('') + '</div>';
+}
+
+function renderKPIs() {
+  const grid = document.getElementById('kpiGrid');
+  // Raw/Sub data helpers
+  const compRaw_target = 25000000, compRaw_actual = 11516960;
+  const compSub_target = 150000000, compSub_actual = 171697637;
+
+  const kpis = [
+    {
+      label: '총 재고금액 (1월)',
+      value: toEok(data.scmInventory.m[0]) + '억',
+      sub: '전년말 ' + toEok(data.scmInventory.prev) + '억 대비',
+      badge: data.scmInventory.m[0] > data.scmInventory.prev ? '▲ 증가' : '▼ 감소',
+      badgeClass: data.scmInventory.m[0] > data.scmInventory.prev ? 'badge-warn' : 'badge-good',
+      accent: 'kpi-accent1', icon: '📦', tab: 'inventory',
+      detail: [
+        ['원료', toEok(data.rawInventory.m[0]) + '억 (전년 ' + toEok(data.rawInventory.prev) + '억)'],
+        ['부자재', toEok(data.subInventory.m[0]) + '억 (전년 ' + toEok(data.subInventory.prev) + '억)'],
+      ]
+    },
+    {
+      label: '부동재고 달성률',
+      value: pct(data.idleSCM_actual[0] / data.idleSCM_target[0]),
+      sub: '목표 ' + toEok(data.idleSCM_target[0]) + '억 / 실적 ' + toEok(data.idleSCM_actual[0]) + '억',
+      badge: data.idleSCM_actual[0] <= data.idleSCM_target[0] ? '목표 이내' : '목표 초과',
+      badgeClass: data.idleSCM_actual[0] <= data.idleSCM_target[0] ? 'badge-good' : 'badge-warn',
+      accent: 'kpi-accent3', icon: '🎯', tab: 'inventory',
+      detail: [
+        ['원료', toEok(data.idleRaw_actual[0]) + '억 / ' + toEok(data.idleRaw_target[0]) + '억 (' + pct(data.idleRaw_actual[0]/data.idleRaw_target[0]) + ')'],
+        ['부자재', toEok(data.idleSub_actual[0]) + '억 / ' + toEok(data.idleSub_target[0]) + '억 (' + pct(data.idleSub_actual[0]/data.idleSub_target[0]) + ')'],
+      ]
+    },
+    {
+      label: 'TCR 달성률 (1월)',
+      value: pct(data.tcrSCM_actual[0] / data.tcrSCM_target[0]),
+      sub: '목표 ' + toEok(data.tcrSCM_target[0]) + '억 / 실적 ' + toEok(data.tcrSCM_actual[0]) + '억',
+      badge: data.tcrSCM_actual[0] >= data.tcrSCM_target[0] ? '목표 달성' : '미달',
+      badgeClass: data.tcrSCM_actual[0] >= data.tcrSCM_target[0] ? 'badge-good' : 'badge-bad',
+      accent: 'kpi-accent2', icon: '💰', tab: 'tcr',
+      detail: [
+        ['원료', toEok1(data.tcrRaw_actual[0]) + '억 / ' + toEok(data.tcrRaw_target[0]) + '억 (' + pct(data.tcrRaw_actual[0]/data.tcrRaw_target[0]) + ')'],
+        ['부자재', toEok1(data.tcrSub_actual[0]) + '억 / ' + toEok(data.tcrSub_target[0]) + '억 (' + pct(data.tcrSub_actual[0]/data.tcrSub_target[0]) + ')'],
+      ]
+    },
+    {
+      label: '원납기 준수율 (1월)',
+      value: pct(data.ontimeSCM_actual[0]),
+      sub: '목표 95.0% / 전년 ' + pct(data.ontimeSCM_prev),
+      badge: data.ontimeSCM_actual[0] >= 0.95 ? '목표 달성' : '미달',
+      badgeClass: data.ontimeSCM_actual[0] >= 0.95 ? 'badge-good' : 'badge-bad',
+      accent: 'kpi-accent5', icon: '⏱', tab: 'etc',
+      detail: [
+        ['원료', pct(data.ontimeRaw_actual[0]) + ' (미준수 ' + data.ontimeRawFail + '건)'],
+        ['부자재', pct(data.ontimeSub_actual[0]) + ' (미준수 ' + data.ontimeSubFail + '건)'],
+      ]
+    },
+    {
+      label: '재고회전일 (1월)',
+      value: data.turnSCM_actual[0].toFixed(1) + '일',
+      sub: '목표 ' + data.turnSCM_target[0].toFixed(1) + '일 / 전년 ' + data.turnSCM_prev.toFixed(1) + '일',
+      badge: data.turnSCM_actual[0] <= data.turnSCM_target[0] ? '목표 달성' : '개선 필요',
+      badgeClass: data.turnSCM_actual[0] <= data.turnSCM_target[0] ? 'badge-good' : 'badge-warn',
+      accent: 'kpi-accent1', icon: '🔄', tab: 'inventory',
+      detail: [
+        ['원료', data.turnRaw_actual[0].toFixed(1) + '일 (목표 ' + data.turnRaw_target[0].toFixed(1) + '일)'],
+        ['부자재', data.turnSub_actual[0].toFixed(1) + '일 (목표 ' + data.turnSub_target[0].toFixed(1) + '일)'],
+      ]
+    },
+    {
+      label: '보상 달성률 (1월)',
+      value: pct(data.compSCM_actual[0] / data.compSCM_target[0]),
+      sub: '목표 ' + toEok1(data.compSCM_target[0]) + '억 / 실적 ' + toEok1(data.compSCM_actual[0]) + '억',
+      badge: data.compSCM_actual[0] >= data.compSCM_target[0] ? '목표 달성' : '미달',
+      badgeClass: data.compSCM_actual[0] >= data.compSCM_target[0] ? 'badge-good' : 'badge-bad',
+      accent: 'kpi-accent2', icon: '🏆', tab: 'comp',
+      detail: [
+        ['원료', toEok1(compRaw_actual) + '억 / ' + toEok1(compRaw_target) + '억 (' + pct(compRaw_actual/compRaw_target) + ')'],
+        ['부자재', toEok1(compSub_actual) + '억 / ' + toEok1(compSub_target) + '억 (' + pct(compSub_actual/compSub_target) + ')'],
+      ]
+    },
+    {
+      label: '해외법인 매출 (1월)',
+      value: toEok(data.overseasTotalActual[0]) + '억',
+      sub: '목표 ' + toEok(data.overseasTotalTarget[0]) + '억 대비',
+      badge: data.overseasTotalActual[0] >= data.overseasTotalTarget[0] ? '목표 달성' : '미달',
+      badgeClass: data.overseasTotalActual[0] >= data.overseasTotalTarget[0] ? 'badge-good' : 'badge-bad',
+      accent: 'kpi-accent3', icon: '🌏', tab: 'etc',
+      detail: [
+        ['상해', toEok1(data.overseasActual.shanghai.m[0]) + '억'],
+        ['광저우/누월드', toEok1(data.overseasActual.guangzhou.m[0]) + '억 / ' + toEok1(data.overseasActual.nuworld.m[0]) + '억'],
+        ['인니/태국', toEok1(data.overseasActual.indo.m[0]) + '억 / ' + toEok1(data.overseasActual.thai.m[0]) + '억'],
+      ]
+    },
+    {
+      label: '발주건수 (1월)',
+      value: num(data.orderTotal.m[0]) + '건',
+      sub: '전년 월평균 ' + num(Math.round(data.orderTotal.prev / 12)) + '건',
+      badge: data.orderTotal.m[0] > data.orderTotal.prev / 12 ? '▲ 증가' : '▼ 감소',
+      badgeClass: 'badge-warn',
+      accent: 'kpi-accent4', icon: '📋', tab: 'etc',
+      detail: [
+        ['원료', num(data.orderRaw.m[0]) + '건 (전년 월평균 ' + num(Math.round(data.orderRaw.prev/12)) + '건)'],
+        ['부자재', num(data.orderSub.m[0]) + '건 (전년 월평균 ' + num(Math.round(data.orderSub.prev/12)) + '건)'],
+      ]
+    }
+  ];
+  grid.innerHTML = kpis.map(k => `
+    <div class="kpi-card ${k.accent}" data-link="${k.tab}" style="cursor:pointer;" title="${k.label} 상세보기">
+      <div class="kpi-icon">${k.icon}</div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.value}</div>
+      <div class="kpi-sub">${k.sub}</div>
+      <div class="kpi-badge ${k.badgeClass}">${k.badge}</div>
+      ${detailHtml(k.detail)}
+    </div>
+  `).join('');
+  grid.querySelectorAll('.kpi-card[data-link]').forEach(card => {
+    card.addEventListener('click', () => switchTab(card.dataset.link));
+  });
+}
+
+// ===== CHARTS =====
+
+// 1. 총 재고금액 추이 (원료+부자재 스택)
+function chartInventoryTotal() {
+  new Chart(document.getElementById('chartInventoryTotal'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        {
+          label: '원료(2026)',
+          data: data.rawInventory.m.map(v => v ? +(v/B).toFixed(1) : null),
+          backgroundColor: 'rgba(25,118,210,0.65)',
+          borderRadius: 2,
+          stack: 'cur',
+          barPercentage: 0.55,
+        },
+        {
+          label: '부자재(2026)',
+          data: data.subInventory.m.map(v => v ? +(v/B).toFixed(1) : null),
+          backgroundColor: 'rgba(56,142,60,0.55)',
+          borderRadius: 4,
+          stack: 'cur',
+          barPercentage: 0.55,
+        },
+        {
+          label: '전년 합계(2025)',
+          data: data.scmInventory.prev_m.map(v => +(v/B).toFixed(1)),
+          type: 'line',
+          borderColor: 'rgba(255,152,0,0.8)',
+          borderDash: [4,3],
+          pointRadius: 3,
+          pointBackgroundColor: 'rgba(255,152,0,0.8)',
+          borderWidth: 2,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        y: { stacked: true, title: { display: true, text: '억원' } }
+      }
+    }
+  });
+}
+
+// 1-1. 원료 재고금액 추이
+function chartInvRaw() {
+  new Chart(document.getElementById('chartInvRaw'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        {
+          label: '2026 실적',
+          data: data.rawInventory.m.map(v => v ? +(v/B).toFixed(1) : null),
+          backgroundColor: 'rgba(25,118,210,0.65)',
+          borderRadius: 4,
+          barPercentage: 0.6,
+        },
+        {
+          label: '2025 실적',
+          data: data.rawInventory.prev_m.map(v => +(v/B).toFixed(1)),
+          type: 'line',
+          borderColor: 'rgba(255,152,0,0.8)',
+          borderDash: [4,3],
+          pointRadius: 3,
+          pointBackgroundColor: 'rgba(255,152,0,0.8)',
+          borderWidth: 2,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: { y: { title: { display: true, text: '억원' } } }
+    }
+  });
+}
+
+// 1-2. 부자재 재고금액 추이
+function chartInvSub() {
+  new Chart(document.getElementById('chartInvSub'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        {
+          label: '2026 실적',
+          data: data.subInventory.m.map(v => v ? +(v/B).toFixed(1) : null),
+          backgroundColor: 'rgba(56,142,60,0.55)',
+          borderRadius: 4,
+          barPercentage: 0.6,
+        },
+        {
+          label: '2025 실적',
+          data: data.subInventory.prev_m.map(v => +(v/B).toFixed(1)),
+          type: 'line',
+          borderColor: 'rgba(255,152,0,0.8)',
+          borderDash: [4,3],
+          pointRadius: 3,
+          pointBackgroundColor: 'rgba(255,152,0,0.8)',
+          borderWidth: 2,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: { y: { title: { display: true, text: '억원' } } }
+    }
+  });
+}
+
+// 2. 재고 구성비 (도넛)
+function chartInventoryCompo() {
+  const normalVal = +(data.invNormal.m[0]/B).toFixed(0);
+  const slowVal = +(data.invSlow.m[0]/B).toFixed(0);
+  const deadVal = +(data.invDead.m[0]/B).toFixed(0);
+  const totalVal = normalVal + slowVal + deadVal;
+  new Chart(document.getElementById('chartInventoryCompo'), {
+    type: 'doughnut',
+    plugins: [ChartDataLabels],
+    data: {
+      labels: ['정상(~3개월)', '부진(4~6개월)', '부동(7개월~)'],
+      datasets: [{
+        data: [normalVal, slowVal, deadVal],
+        backgroundColor: ['rgba(129,199,132,0.8)', 'rgba(255,183,77,0.8)', 'rgba(239,83,80,0.8)'],
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '50%',
+      layout: { padding: { top: 5, bottom: 0 } },
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 10 }, padding: 10 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => ctx.label + ': ' + ctx.parsed + '억원 (' +
+              (ctx.parsed / totalVal * 100).toFixed(1) + '%)'
+          }
+        },
+        datalabels: {
+          color: '#1a2332',
+          font: { size: 10, weight: 600 },
+          formatter: (val) => val + '억 (' + (val/totalVal*100).toFixed(1) + '%)',
+          anchor: 'center',
+          align: 'center',
+          clamp: true,
+        }
+      }
+    }
+  });
+}
+
+// 2-1. 원료 재고 구성비
+function chartCompoRaw() {
+  const nVal = +(data.rawNormal.m[0]/B).toFixed(0);
+  const sVal = +(data.rawSlow.m[0]/B).toFixed(0);
+  const dVal = +(data.rawDead.m[0]/B).toFixed(0);
+  const tVal = nVal + sVal + dVal;
+  new Chart(document.getElementById('chartCompoRaw'), {
+    type: 'doughnut',
+    plugins: [ChartDataLabels],
+    data: {
+      labels: ['정상(~3개월)', '부진(4~6개월)', '부동(7개월~)'],
+      datasets: [{ data: [nVal, sVal, dVal], backgroundColor: ['rgba(129,199,132,0.8)', 'rgba(255,183,77,0.8)', 'rgba(239,83,80,0.8)'], borderWidth: 0 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '50%',
+      layout: { padding: { top: 5, bottom: 0 } },
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 10 }, padding: 10 } },
+        tooltip: { callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed + '억원 (' + (ctx.parsed/tVal*100).toFixed(1) + '%)' } },
+        datalabels: { color: '#1a2332', font: { size: 10, weight: 600 }, formatter: (val) => val + '억 (' + (val/tVal*100).toFixed(1) + '%)', anchor: 'center', align: 'center', clamp: true }
+      }
+    }
+  });
+}
+
+// 2-2. 부자재 재고 구성비
+function chartCompoSub() {
+  const nVal = +(data.subNormal.m[0]/B).toFixed(0);
+  const sVal = +(data.subSlow.m[0]/B).toFixed(0);
+  const dVal = +(data.subDead.m[0]/B).toFixed(0);
+  const tVal = nVal + sVal + dVal;
+  new Chart(document.getElementById('chartCompoSub'), {
+    type: 'doughnut',
+    plugins: [ChartDataLabels],
+    data: {
+      labels: ['정상(~3개월)', '부진(4~6개월)', '부동(7개월~)'],
+      datasets: [{ data: [nVal, sVal, dVal], backgroundColor: ['rgba(129,199,132,0.8)', 'rgba(255,183,77,0.8)', 'rgba(239,83,80,0.8)'], borderWidth: 0 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '50%',
+      layout: { padding: { top: 5, bottom: 0 } },
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 10 }, padding: 10 } },
+        tooltip: { callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed + '억원 (' + (ctx.parsed/tVal*100).toFixed(1) + '%)' } },
+        datalabels: { color: '#1a2332', font: { size: 10, weight: 600 }, formatter: (val) => val + '억 (' + (val/tVal*100).toFixed(1) + '%)', anchor: 'center', align: 'center', clamp: true }
+      }
+    }
+  });
+}
+
+// 3. 구매 vs 출고
+function chartPurchaseRelease() {
+  const categories = ['SCM 전체', '원자재', '부자재'];
+  new Chart(document.getElementById('chartPurchaseRelease'), {
+    type: 'bar',
+    data: {
+      labels: categories,
+      datasets: [
+        {
+          label: '구매(1월)',
+          data: [data.scmPurchase.m[0]/B, data.rawPurchase.m[0]/B, data.subPurchase.m[0]/B].map(v=>+v.toFixed(0)),
+          backgroundColor: 'rgba(79,195,247,0.7)',
+          borderRadius: 4,
+        },
+        {
+          label: '출고(1월)',
+          data: [data.scmRelease.m[0]/B, data.rawRelease.m[0]/B, data.subRelease.m[0]/B].map(v=>+v.toFixed(0)),
+          backgroundColor: 'rgba(129,199,132,0.7)',
+          borderRadius: 4,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: { y: { beginAtZero: true, title: { display: true, text: '억원' } } }
+    }
+  });
+}
+
+// 4. 원자재/부자재 재고
+function chartRawSub() {
+  const labels = ['원자재', '부자재'];
+  new Chart(document.getElementById('chartRawSub'), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: '정상', data: [data.rawNormal.m[0]/B, data.subNormal.m[0]/B].map(v=>+v.toFixed(0)), backgroundColor: 'rgba(129,199,132,0.7)', borderRadius: 4 },
+        { label: '부진', data: [data.rawSlow.m[0]/B, data.subSlow.m[0]/B].map(v=>+v.toFixed(0)), backgroundColor: 'rgba(255,183,77,0.7)', borderRadius: 4 },
+        { label: '부동', data: [data.rawDead.m[0]/B, data.subDead.m[0]/B].map(v=>+v.toFixed(0)), backgroundColor: 'rgba(239,83,80,0.7)', borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: { x: { stacked: true }, y: { stacked: true, title: { display: true, text: '억원' } } }
+    }
+  });
+}
+
+// 5. 부동재고 SCM
+function chartIdleInventory() {
+  new Chart(document.getElementById('chartIdleInventory'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        {
+          label: '목표',
+          data: data.idleSCM_target.map(v => +(v/B).toFixed(1)),
+          backgroundColor: 'rgba(79,195,247,0.3)',
+          borderColor: 'rgba(79,195,247,0.8)',
+          borderWidth: 1,
+          borderRadius: 4,
+          barPercentage: 0.7,
+        },
+        {
+          label: '실적',
+          data: data.idleSCM_actual.map(v => v ? +(v/B).toFixed(1) : null),
+          backgroundColor: 'rgba(239,83,80,0.7)',
+          borderRadius: 4,
+          barPercentage: 0.7,
+        },
+        {
+          label: '전년말',
+          data: months.map(() => +(data.idleSCM_prevFinal/B).toFixed(1)),
+          type: 'line',
+          borderColor: 'rgba(186,104,200,0.8)',
+          borderDash: [6,3],
+          pointRadius: 0,
+          borderWidth: 2,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' },
+        tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y + '억원' } }
+      },
+      scales: { y: { title: { display: true, text: '억원' } } }
+    }
+  });
+}
+
+// 부동재고 원료
+function chartIdleRaw() {
+  new Chart(document.getElementById('chartIdleRaw'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        { label: '목표', data: data.idleRaw_target.map(v => +(v/B).toFixed(1)), backgroundColor: 'rgba(79,195,247,0.3)', borderColor: 'rgba(79,195,247,0.7)', borderWidth: 1, borderRadius: 4, barPercentage: 0.6 },
+        { label: '실적', data: data.idleRaw_actual.map(v => v ? +(v/B).toFixed(1) : null), backgroundColor: 'rgba(129,199,132,0.7)', borderRadius: 4, barPercentage: 0.6 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { title: { display: true, text: '억원' } } } }
+  });
+}
+
+// 부동재고 부자재
+function chartIdleSub() {
+  new Chart(document.getElementById('chartIdleSub'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        { label: '목표', data: data.idleSub_target.map(v => +(v/B).toFixed(1)), backgroundColor: 'rgba(79,195,247,0.3)', borderColor: 'rgba(79,195,247,0.7)', borderWidth: 1, borderRadius: 4, barPercentage: 0.6 },
+        { label: '실적', data: data.idleSub_actual.map(v => v ? +(v/B).toFixed(1) : null), backgroundColor: 'rgba(255,183,77,0.7)', borderRadius: 4, barPercentage: 0.6 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { title: { display: true, text: '억원' } } } }
+  });
+}
+
+// 재고회전일
+function chartTurnover() {
+  new Chart(document.getElementById('chartTurnover'), {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: [
+        { label: 'SCM 목표', data: data.turnSCM_target, borderColor: 'rgba(79,195,247,0.5)', borderDash: [6,3], pointRadius: 3, borderWidth: 2, fill: false },
+        { label: 'SCM 실적', data: data.turnSCM_actual.map(v => v || null), borderColor: 'rgba(79,195,247,1)', pointRadius: 5, borderWidth: 3, fill: false },
+        { label: '원료 목표', data: data.turnRaw_target, borderColor: 'rgba(129,199,132,0.5)', borderDash: [6,3], pointRadius: 3, borderWidth: 2, fill: false },
+        { label: '원료 실적', data: data.turnRaw_actual.map(v => v || null), borderColor: 'rgba(129,199,132,1)', pointRadius: 5, borderWidth: 3, fill: false },
+        { label: '부자재 목표', data: data.turnSub_target, borderColor: 'rgba(255,183,77,0.5)', borderDash: [6,3], pointRadius: 3, borderWidth: 2, fill: false },
+        { label: '부자재 실적', data: data.turnSub_actual.map(v => v || null), borderColor: 'rgba(255,183,77,1)', pointRadius: 5, borderWidth: 3, fill: false },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: { y: { title: { display: true, text: '일' }, min: 20 } }
+    }
+  });
+}
+
+// TCR 전체
+function chartTCR() {
+  new Chart(document.getElementById('chartTCR'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        { label: '목표', data: data.tcrSCM_target.map(v => +(v/B).toFixed(1)), backgroundColor: 'rgba(79,195,247,0.3)', borderColor: 'rgba(79,195,247,0.7)', borderWidth: 1, borderRadius: 4, barPercentage: 0.6 },
+        { label: '실적', data: data.tcrSCM_actual.map(v => v ? +(v/B).toFixed(1) : null), backgroundColor: 'rgba(129,199,132,0.7)', borderRadius: 4, barPercentage: 0.6 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { title: { display: true, text: '억원' } } } }
+  });
+}
+
+// TCR 원료 상세
+function chartTCRRaw() {
+  new Chart(document.getElementById('chartTCRRaw'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        { label: '단가인하', data: data.tcrRaw_down.map(v => v ? +(v/B).toFixed(1) : null), backgroundColor: 'rgba(129,199,132,0.7)', borderRadius: 4, stack: 'actual' },
+        { label: '대체실적', data: data.tcrRaw_alt.map(v => v ? +(v/B).toFixed(1) : null), backgroundColor: 'rgba(79,195,247,0.7)', borderRadius: 4, stack: 'actual' },
+        { label: '단가인상(-)', data: data.tcrRaw_up.map(v => v ? -(v/B).toFixed(1) : null), backgroundColor: 'rgba(239,83,80,0.7)', borderRadius: 4, stack: 'actual' },
+        { label: '목표', data: data.tcrRaw_target.map(v => +(v/B).toFixed(1)), type: 'line', borderColor: 'rgba(255,183,77,0.8)', borderDash: [4,2], pointRadius: 3, borderWidth: 2, fill: false }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: { y: { title: { display: true, text: '억원' }, stacked: true } }
+    }
+  });
+}
+
+// 보상
+function chartCompensation() {
+  new Chart(document.getElementById('chartCompensation'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        { label: '목표', data: data.compSCM_target.map(v => +(v/B).toFixed(2)), backgroundColor: 'rgba(79,195,247,0.3)', borderColor: 'rgba(79,195,247,0.7)', borderWidth: 1, borderRadius: 4, barPercentage: 0.6 },
+        { label: '실적', data: data.compSCM_actual.map(v => v ? +(v/B).toFixed(2) : null), backgroundColor: 'rgba(186,104,200,0.7)', borderRadius: 4, barPercentage: 0.6 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { title: { display: true, text: '억원' } } } }
+  });
+}
+
+// 사용소진
+function chartConsumption() {
+  new Chart(document.getElementById('chartConsumption'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        { label: '목표', data: data.consSCM_target.map(v => +(v/B).toFixed(1)), backgroundColor: 'rgba(79,195,247,0.3)', borderColor: 'rgba(79,195,247,0.7)', borderWidth: 1, borderRadius: 4, barPercentage: 0.6 },
+        { label: '실적', data: data.consSCM_actual.map(v => v ? +(v/B).toFixed(1) : null), backgroundColor: 'rgba(255,183,77,0.7)', borderRadius: 4, barPercentage: 0.6 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { title: { display: true, text: '억원' } } } }
+  });
+}
+
+// 자체폐기
+function chartDisposal() {
+  new Chart(document.getElementById('chartDisposal'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        { label: '원료', data: data.dispRaw.m.map(v => v ? +(v/B).toFixed(2) : null), backgroundColor: 'rgba(129,199,132,0.7)', borderRadius: 4, stack: 's1' },
+        { label: '부자재', data: data.dispSub.m.map(v => v ? +(v/B).toFixed(2) : null), backgroundColor: 'rgba(255,183,77,0.7)', borderRadius: 4, stack: 's1' },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: { y: { stacked: true, title: { display: true, text: '억원' } } }
+    }
+  });
+}
+
+// 원납기 준수율
+function chartOntime() {
+  new Chart(document.getElementById('chartOntime'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        { label: 'SCM 전체', data: data.ontimeSCM_actual.map(v => v ? +(v*100).toFixed(1) : null), backgroundColor: 'rgba(79,195,247,0.7)', borderRadius: 4, barPercentage: 0.5 },
+        { label: '원료', data: data.ontimeRaw_actual.map(v => v ? +(v*100).toFixed(1) : null), backgroundColor: 'rgba(129,199,132,0.7)', borderRadius: 4, barPercentage: 0.5 },
+        { label: '부자재', data: data.ontimeSub_actual.map(v => v ? +(v*100).toFixed(1) : null), backgroundColor: 'rgba(255,183,77,0.7)', borderRadius: 4, barPercentage: 0.5 },
+        { label: '목표(95%)', data: months.map(() => 95), type: 'line', borderColor: 'rgba(239,83,80,0.8)', borderDash: [6,3], pointRadius: 0, borderWidth: 2, fill: false }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: { y: { min: 90, max: 101, title: { display: true, text: '%' } } }
+    }
+  });
+}
+
+// 원납기 미준수 건수
+function chartOntimeCount() {
+  new Chart(document.getElementById('chartOntimeCount'), {
+    type: 'bar',
+    data: {
+      labels: ['전체 건수', '원료 미준수', '부자재 미준수'],
+      datasets: [{
+        data: [data.ontimeTotal, data.ontimeRawFail, data.ontimeSubFail],
+        backgroundColor: ['rgba(79,195,247,0.7)', 'rgba(129,199,132,0.7)', 'rgba(255,183,77,0.7)'],
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ctx.parsed.y + '건' } }
+      },
+      scales: { y: { title: { display: true, text: '건' } } }
+    }
+  });
+}
+
+// 해외법인 매출
+function chartOverseas() {
+  const names = ['상해', '광저우', '누월드', '인니', '태국'];
+  const keys = ['shanghai', 'guangzhou', 'nuworld', 'indo', 'thai'];
+  const colors = ['rgba(79,195,247,0.7)', 'rgba(129,199,132,0.7)', 'rgba(255,183,77,0.7)', 'rgba(186,104,200,0.7)', 'rgba(239,83,80,0.7)'];
+
+  const datasets = keys.map((k, i) => ({
+    label: names[i],
+    data: data.overseasActual[k].m.map(v => v ? +(v/B).toFixed(1) : null),
+    backgroundColor: colors[i],
+    borderRadius: 4,
+    stack: 'actual',
+  }));
+
+  datasets.push({
+    label: '목표 합계',
+    data: data.overseasTotalTarget.map(v => +(v/B).toFixed(1)),
+    type: 'line',
+    borderColor: 'rgba(0,0,0,0.4)',
+    borderDash: [6,3],
+    pointRadius: 3,
+    borderWidth: 2,
+    fill: false,
+  });
+
+  new Chart(document.getElementById('chartOverseas'), {
+    type: 'bar',
+    data: { labels: months, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: { y: { stacked: true, title: { display: true, text: '억원' } } }
+    }
+  });
+}
+
+// 발주건수
+function chartOrders() {
+  new Chart(document.getElementById('chartOrders'), {
+    type: 'bar',
+    data: {
+      labels: ['원료사업', '원료구매', '패키징구매'],
+      datasets: [
+        {
+          label: '1월 실적',
+          data: [data.orderByDept.rawBiz, data.orderByDept.rawPur, data.orderByDept.pkgPur],
+          backgroundColor: ['rgba(129,199,132,0.7)', 'rgba(79,195,247,0.7)', 'rgba(255,183,77,0.7)'],
+          borderRadius: 4,
+        }
+      ]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ctx.parsed.x.toLocaleString() + '건' } }
+      },
+      scales: { x: { title: { display: true, text: '건' } } }
+    }
+  });
+}
+
+// 인당 발주건수 + 인원
+function chartHeadcount() {
+  new Chart(document.getElementById('chartHeadcount'), {
+    type: 'bar',
+    data: {
+      labels: ['패키징1팀', '패키징2팀', '원료구매팀'],
+      datasets: [
+        {
+          label: '인원(명)',
+          data: [data.headcount.pkg1, data.headcount.pkg2, data.headcount.rawPur],
+          backgroundColor: 'rgba(79,195,247,0.7)',
+          borderRadius: 4,
+          yAxisID: 'y',
+        },
+        {
+          label: '인당 발주건수',
+          data: [data.orderPerPerson.pkgPur, data.orderPerPerson.pkgPur, data.orderPerPerson.rawPur],
+          type: 'line',
+          borderColor: 'rgba(255,183,77,1)',
+          pointRadius: 5,
+          borderWidth: 3,
+          fill: false,
+          yAxisID: 'y1',
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        y: { title: { display: true, text: '명' }, position: 'left' },
+        y1: { title: { display: true, text: '건/인' }, position: 'right', grid: { drawOnChartArea: false } }
+      }
+    }
+  });
+}
+
+// ===== TAB SYSTEM =====
+const tabInits = {
+  summary: () => { renderKPIs(); },
+  inventory: () => { chartInventoryTotal(); chartInvRaw(); chartInvSub(); chartInventoryCompo(); chartCompoRaw(); chartCompoSub(); chartPurchaseRelease(); chartIdleInventory(); chartIdleRaw(); chartIdleSub(); chartTurnover(); },
+  tcr: () => { chartTCR(); chartTCRRaw(); },
+  comp: () => { chartCompensation(); chartConsumption(); },
+  etc: () => { chartDisposal(); chartOntime(); chartOntimeCount(); chartOverseas(); chartOrders(); chartHeadcount(); },
+};
+const initialized = {};
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+  document.getElementById('panel-' + tabId).classList.add('active');
+  if (!initialized[tabId]) {
+    tabInits[tabId]();
+    initialized[tabId] = true;
+  }
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+// Init summary tab
+switchTab('summary');
+
+// ===== DOWNLOAD =====
+function downloadSection(section) {
+  const wb = XLSX.utils.book_new();
+  const M = months;
+  const hdr = ['구분','항목','전년실적',...M];
+
+  if (section === 'summary') {
+    const rows = [hdr,
+      ['총 재고금액','SCM',+(data.scmInventory.prev/B).toFixed(1),...data.scmInventory.m.map(v=>v?+(v/B).toFixed(1):'')],
+      ['','원료',+(data.rawInventory.prev/B).toFixed(1),...data.rawInventory.m.map(v=>v?+(v/B).toFixed(1):'')],
+      ['','부자재',+(data.subInventory.prev/B).toFixed(1),...data.subInventory.m.map(v=>v?+(v/B).toFixed(1):'')],
+      ['부동재고 목표','SCM',,...data.idleSCM_target.map(v=>+(v/B).toFixed(1))],
+      ['부동재고 실적','SCM',+(data.idleSCM_prevFinal/B).toFixed(1),...data.idleSCM_actual.map(v=>v?+(v/B).toFixed(1):'')],
+      ['TCR 목표','SCM',,...data.tcrSCM_target.map(v=>+(v/B).toFixed(1))],
+      ['TCR 실적','SCM',+(data.tcrSCM_prevFinal/B).toFixed(1),...data.tcrSCM_actual.map(v=>v?+(v/B).toFixed(1):'')],
+      ['원납기준수율','목표',data.ontimeSCM_target,...M.map(()=>data.ontimeSCM_target)],
+      ['','SCM실적',data.ontimeSCM_prev,...data.ontimeSCM_actual.map(v=>v||'')],
+      ['재고회전일','목표',,...data.turnSCM_target],
+      ['','SCM실적',data.turnSCM_prev,...data.turnSCM_actual.map(v=>v||'')],
+      ['발주건수','SCM',data.orderTotal.prev,...data.orderTotal.m.map(v=>v||'')],
+      ['','원료',data.orderRaw.prev,...data.orderRaw.m.map(v=>v||'')],
+      ['','부자재',data.orderSub.prev,...data.orderSub.m.map(v=>v||'')],
+    ];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), '요약');
+  }
+
+  if (section === 'inventory') {
+    const rows = [hdr,
+      ['총 구매금액','SCM',+(data.scmPurchase.prev/B).toFixed(1),...data.scmPurchase.m.map(v=>v?+(v/B).toFixed(1):'')],
+      ['총 출고금액','SCM',+(data.scmRelease.prev/B).toFixed(1),...data.scmRelease.m.map(v=>v?+(v/B).toFixed(1):'')],
+      ['총 재고금액','SCM',+(data.scmInventory.prev/B).toFixed(1),...data.scmInventory.m.map(v=>v?+(v/B).toFixed(1):'')],
+      ['','원료',+(data.rawInventory.prev/B).toFixed(1),...data.rawInventory.m.map(v=>v?+(v/B).toFixed(1):'')],
+      ['','부자재',+(data.subInventory.prev/B).toFixed(1),...data.subInventory.m.map(v=>v?+(v/B).toFixed(1):'')],
+      [],
+      ['재고구성(SCM)','정상',+(data.invNormal.prev/B).toFixed(0),...data.invNormal.m.map(v=>v?+(v/B).toFixed(0):'')],
+      ['','부진',+(data.invSlow.prev/B).toFixed(0),...data.invSlow.m.map(v=>v?+(v/B).toFixed(0):'')],
+      ['','부동',+(data.invDead.prev/B).toFixed(0),...data.invDead.m.map(v=>v?+(v/B).toFixed(0):'')],
+      [],
+      ['부동재고 목표','SCM',,...data.idleSCM_target.map(v=>+(v/B).toFixed(1))],
+      ['부동재고 실적','SCM',+(data.idleSCM_prevFinal/B).toFixed(1),...data.idleSCM_actual.map(v=>v?+(v/B).toFixed(1):'')],
+      ['','원료 목표',,...data.idleRaw_target.map(v=>+(v/B).toFixed(1))],
+      ['','원료 실적',,...data.idleRaw_actual.map(v=>v?+(v/B).toFixed(1):'')],
+      ['','부자재 목표',,...data.idleSub_target.map(v=>+(v/B).toFixed(1))],
+      ['','부자재 실적',,...data.idleSub_actual.map(v=>v?+(v/B).toFixed(1):'')],
+      [],
+      ['재고회전일 목표','SCM',,...data.turnSCM_target],
+      ['재고회전일 실적','SCM',data.turnSCM_prev,...data.turnSCM_actual.map(v=>v||'')],
+      ['','원료 목표',,...data.turnRaw_target],
+      ['','원료 실적',,...data.turnRaw_actual.map(v=>v||'')],
+      ['','부자재 목표',,...data.turnSub_target],
+      ['','부자재 실적',,...data.turnSub_actual.map(v=>v||'')],
+    ];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), '재고현황');
+  }
+
+  if (section === 'tcr') {
+    const rows = [hdr,
+      ['TCR 목표','SCM',,...data.tcrSCM_target.map(v=>+(v/B).toFixed(1))],
+      ['TCR 실적','SCM',+(data.tcrSCM_prevFinal/B).toFixed(1),...data.tcrSCM_actual.map(v=>v?+(v/B).toFixed(1):'')],
+      ['','원료 목표',,...data.tcrRaw_target.map(v=>+(v/B).toFixed(1))],
+      ['','원료 실적',,...data.tcrRaw_actual.map(v=>v?+(v/B).toFixed(1):'')],
+      ['','원료 인상',,...data.tcrRaw_up.map(v=>v?+(v/B).toFixed(1):'')],
+      ['','원료 인하',,...data.tcrRaw_down.map(v=>v?+(v/B).toFixed(1):'')],
+      ['','원료 대체',,...data.tcrRaw_alt.map(v=>v?+(v/B).toFixed(1):'')],
+      ['','부자재 목표',,...data.tcrSub_target.map(v=>+(v/B).toFixed(1))],
+      ['','부자재 실적',,...data.tcrSub_actual.map(v=>v?+(v/B).toFixed(1):'')],
+    ];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'TCR');
+  }
+
+  if (section === 'comp') {
+    const rows = [hdr,
+      ['보상 목표','SCM',,...data.compSCM_target.map(v=>+(v/B).toFixed(2))],
+      ['보상 실적','SCM',+(data.compSCM_prev/B).toFixed(1),...data.compSCM_actual.map(v=>v?+(v/B).toFixed(2):'')],
+      ['사용소진 목표','SCM(부자재)',,...data.consSCM_target.map(v=>+(v/B).toFixed(1))],
+      ['사용소진 실적','SCM(부자재)',+(data.consSCM_prev/B).toFixed(1),...data.consSCM_actual.map(v=>v?+(v/B).toFixed(1):'')],
+    ];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), '보상_사용소진');
+  }
+
+  if (section === 'etc') {
+    const rows = [hdr,
+      ['자체폐기','SCM',+(data.dispSCM.prev/B).toFixed(1),...data.dispSCM.m.map(v=>v?+(v/B).toFixed(2):'')],
+      ['','원료',+(data.dispRaw.prev/B).toFixed(1),...data.dispRaw.m.map(v=>v?+(v/B).toFixed(2):'')],
+      ['','부자재',+(data.dispSub.prev/B).toFixed(1),...data.dispSub.m.map(v=>v?+(v/B).toFixed(2):'')],
+      [],
+      ['원납기준수율','목표',,...M.map(()=>data.ontimeSCM_target)],
+      ['','SCM실적',data.ontimeSCM_prev,...data.ontimeSCM_actual.map(v=>v||'')],
+      ['','원료실적',data.ontimeRaw_prev,...data.ontimeRaw_actual.map(v=>v||'')],
+      ['','부자재실적',data.ontimeSub_prev,...data.ontimeSub_actual.map(v=>v||'')],
+      ['','전체건수',,...[data.ontimeTotal,...Array(11).fill('')]],
+      ['','원료미준수',,...[data.ontimeRawFail,...Array(11).fill('')]],
+      ['','부자재미준수',,...[data.ontimeSubFail,...Array(11).fill('')]],
+      [],
+      ['해외법인','상해',+(data.overseasActual.shanghai.prev/B).toFixed(1),...data.overseasActual.shanghai.m.map(v=>v?+(v/B).toFixed(1):'')],
+      ['','광저우',+(data.overseasActual.guangzhou.prev/B).toFixed(1),...data.overseasActual.guangzhou.m.map(v=>v?+(v/B).toFixed(1):'')],
+      ['','누월드',+(data.overseasActual.nuworld.prev/B).toFixed(1),...data.overseasActual.nuworld.m.map(v=>v?+(v/B).toFixed(1):'')],
+      ['','인니',+(data.overseasActual.indo.prev/B).toFixed(1),...data.overseasActual.indo.m.map(v=>v?+(v/B).toFixed(1):'')],
+      ['','태국',+(data.overseasActual.thai.prev/B).toFixed(1),...data.overseasActual.thai.m.map(v=>v?+(v/B).toFixed(1):'')],
+      [],
+      ['발주건수','SCM',data.orderTotal.prev,...data.orderTotal.m.map(v=>v||'')],
+      ['','원료',data.orderRaw.prev,...data.orderRaw.m.map(v=>v||'')],
+      ['','부자재',data.orderSub.prev,...data.orderSub.m.map(v=>v||'')],
+    ];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), '기타');
+  }
+
+  const sectionNames = { summary:'요약', inventory:'재고현황', tcr:'TCR', comp:'보상_소진', etc:'기타' };
+  XLSX.writeFile(wb, 'SCM_Dashboard_' + sectionNames[section] + '.xlsx');
+}
+
+// ===== UPLOAD =====
+document.getElementById('fileInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const wb = XLSX.read(ev.target.result, { type: 'array' });
+      const ws = wb.Sheets['SCM_26년'];
+      if (!ws) { alert('SCM_26년 시트를 찾을 수 없습니다.'); return; }
+      const v = (r,c) => { const cell = ws[XLSX.utils.encode_cell({r:r-1,c:c-1})]; return cell ? (cell.v || 0) : 0; };
+      // I=9 col(index8), J~T = cols 9~19 => row indices in sheet
+      const colI = (row) => Array.from({length:12}, (_,i) => v(row, 9+i));
+
+      // Update data from Excel
+      data.scmPurchase.m = colI(5);
+      data.scmRelease.m = colI(6);
+      data.scmInventory.m = colI(11);
+      data.invNormal.m = colI(12);
+      data.invSlow.m = colI(13);
+      data.invDead.m = colI(14);
+      data.rawInventory.m = colI(22);
+      data.rawNormal.m = colI(23);
+      data.rawSlow.m = colI(24);
+      data.rawDead.m = colI(25);
+      data.rawPurchase.m = colI(16);
+      data.rawRelease.m = colI(17);
+      data.subInventory.m = colI(33);
+      data.subNormal.m = colI(34);
+      data.subSlow.m = colI(35);
+      data.subDead.m = colI(36);
+      data.subPurchase.m = colI(27);
+      data.subRelease.m = colI(28);
+      data.idleSCM_actual = colI(39);
+      data.idleRaw_actual = colI(42);
+      data.idleSub_actual = colI(45);
+      data.turnSCM_actual = colI(48);
+      data.turnRaw_actual = colI(51);
+      data.turnSub_actual = colI(54);
+      data.tcrSCM_actual = colI(76);
+      data.tcrRaw_actual = colI(86);
+      data.tcrRaw_up = colI(79);
+      data.tcrRaw_down = colI(80);
+      data.tcrRaw_alt = colI(82);
+      data.tcrSub_actual = colI(93);
+      data.compSCM_actual = colI(57);
+      data.consSCM_actual = colI(66);
+      data.dispSCM.m = colI(68);
+      data.dispRaw.m = colI(69);
+      data.dispSub.m = colI(70);
+      data.ontimeSCM_actual = colI(96);
+      data.ontimeRaw_actual = colI(99);
+      data.ontimeSub_actual = colI(102);
+      data.overseasActual.shanghai.m = colI(118);
+      data.overseasActual.guangzhou.m = colI(119);
+      data.overseasActual.nuworld.m = colI(120);
+      data.overseasActual.indo.m = colI(121);
+      data.overseasActual.thai.m = colI(122);
+      data.overseasTotalActual = colI(123);
+      data.orderTotal.m = colI(107);
+      data.orderRaw.m = colI(108);
+      data.orderSub.m = colI(109);
+
+      // Destroy all existing charts and re-init
+      Object.values(Chart.instances).forEach(c => c.destroy());
+      Object.keys(initialized).forEach(k => delete initialized[k]);
+      switchTab(document.querySelector('.tab-btn.active').dataset.tab);
+      alert('데이터가 업데이트되었습니다.');
+    } catch(err) {
+      alert('파일 처리 중 오류: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  e.target.value = '';
+});
+</script>
+</body>
+</html>
