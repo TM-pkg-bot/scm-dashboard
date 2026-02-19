@@ -242,6 +242,32 @@
   .chart-container.tall {
     height: 240px;
   }
+  .vendor-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 6px;
+  }
+  .vendor-table th {
+    background: var(--card-alt, #f5f7fa);
+    padding: 7px 10px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #ddd;
+    white-space: nowrap;
+  }
+  .vendor-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+  }
+  .vendor-table tr:hover {
+    background: rgba(79,195,247,0.06);
+  }
+  .vendor-table .reason {
+    color: #666;
+    font-size: 11px;
+  }
   .inv-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -441,8 +467,14 @@
         <div class="chart-container"><canvas id="chartOntime"></canvas></div>
       </div>
       <div class="chart-box">
-        <h3>원납기 미준수 건수</h3>
+        <h3>부서별 미준수 건수 <span>(1월, 총 34건)</span></h3>
         <div class="chart-container"><canvas id="chartOntimeCount"></canvas></div>
+      </div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-box wide">
+        <h3>주요 미준수 업체 및 사유 <span>(1월)</span></h3>
+        <div id="vendorTable"></div>
       </div>
     </div>
   </div>
@@ -578,21 +610,15 @@
     <button class="btn btn-download" onclick="downloadSection('etc')"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>엑셀 다운로드</button>
   </div>
   <div class="section">
-    <div class="section-title">자체폐기 <span class="tag">Disposal</span></div>
+    <div class="section-title">자체폐기 / 해외법인 매출 <span class="tag">Disposal & Overseas</span></div>
     <div class="chart-grid">
       <div class="chart-box">
         <h3>자체폐기 실적 <span>(억원)</span></h3>
         <div class="chart-container"><canvas id="chartDisposal"></canvas></div>
       </div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">해외법인 매출 <span class="tag">Overseas Sales</span></div>
-    <div class="chart-grid">
-      <div class="chart-box wide">
+      <div class="chart-box">
         <h3>해외법인 월별 매출 실적 <span>(억원)</span></h3>
-        <div class="chart-container tall"><canvas id="chartOverseas"></canvas></div>
+        <div class="chart-container"><canvas id="chartOverseas"></canvas></div>
       </div>
     </div>
   </div>
@@ -712,6 +738,16 @@ const data = {
   ontimeTotal: 1742,
   ontimeRawFail: 1,
   ontimeSubFail: 79,
+  // 부자재 미준수 부서별 상세
+  ontimeSubByDept: { FCM: 8, DPD: 8, IWD: 7, CLO: 3, ENP: 2, JSM: 2, 기타: 4 },
+  ontimeSubByVendor: [
+    { name: '코코스팩(주)', count: 4, depts: 'DPD', reason: '캡 생산 케파 부족 / 금형 증작 완료 (7K/일→14K/일)' },
+    { name: '씨케이인더스트리', count: 4, depts: 'FCM', reason: '연초 신제품 대응에 따른 일부 제품 수급 지연' },
+    { name: '(유)보문특수칼라', count: 2, depts: 'CLO', reason: '고객 우선순위 대응에 따른 일부 제품 수급 지연' },
+    { name: '(주)아이티앤컴퍼니', count: 2, depts: 'ENP', reason: '팔레트 생산 케파 부족 / 수주량 급증에 따른 설비 가동율 문제' },
+    { name: '주식회사 탭코리아', count: 2, depts: 'FCM/JSM', reason: '' },
+    { name: '기타 (20건)', count: 20, depts: '-', reason: '' },
+  ],
 
   // 해외법인
   overseasActual: {
@@ -1352,15 +1388,20 @@ function chartOntime() {
   });
 }
 
-// 원납기 미준수 건수
+// 부서별 미준수 건수
 function chartOntimeCount() {
+  const dept = data.ontimeSubByDept;
+  const labels = Object.keys(dept);
+  const values = Object.values(dept);
+  const colors = ['rgba(79,195,247,0.7)','rgba(129,199,132,0.7)','rgba(255,183,77,0.7)','rgba(186,104,200,0.7)','rgba(239,83,80,0.7)','rgba(255,213,79,0.7)','rgba(176,190,197,0.7)'];
   new Chart(document.getElementById('chartOntimeCount'), {
     type: 'bar',
     data: {
-      labels: ['전체 건수', '원료 미준수', '부자재 미준수'],
+      labels: labels,
       datasets: [{
-        data: [data.ontimeTotal, data.ontimeRawFail, data.ontimeSubFail],
-        backgroundColor: ['rgba(79,195,247,0.7)', 'rgba(129,199,132,0.7)', 'rgba(255,183,77,0.7)'],
+        label: '미준수 건수',
+        data: values,
+        backgroundColor: colors,
         borderRadius: 4,
       }]
     },
@@ -1369,9 +1410,20 @@ function chartOntimeCount() {
       plugins: { legend: { display: false },
         tooltip: { callbacks: { label: ctx => ctx.parsed.y + '건' } }
       },
-      scales: { y: { title: { display: true, text: '건' } } }
+      scales: { y: { title: { display: true, text: '건' }, beginAtZero: true } }
     }
   });
+}
+
+// 주요 미준수 업체 테이블
+function renderVendorTable() {
+  const vendors = data.ontimeSubByVendor;
+  let html = '<table class="vendor-table"><thead><tr><th>업체명</th><th>건수</th><th>부서</th><th>주요 사유</th></tr></thead><tbody>';
+  vendors.forEach(v => {
+    html += `<tr><td>${v.name}</td><td style="text-align:center;font-weight:600;">${v.count}</td><td style="text-align:center;">${v.depts}</td><td class="reason">${v.reason || '-'}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('vendorTable').innerHTML = html;
 }
 
 // 해외법인 매출
@@ -1476,7 +1528,7 @@ function chartHeadcount() {
 // ===== TAB SYSTEM =====
 const tabInits = {
   summary: () => { renderKPIs(); },
-  ontime: () => { chartOntime(); chartOntimeCount(); },
+  ontime: () => { chartOntime(); chartOntimeCount(); renderVendorTable(); },
   inventory: () => { chartInventoryTotal(); chartInvRaw(); chartInvSub(); chartInventoryCompo(); chartCompoRaw(); chartCompoSub(); chartPurchaseRelease(); chartIdleInventory(); chartIdleRaw(); chartIdleSub(); chartTurnover(); },
   tcr: () => { chartTCR(); chartTCRRaw(); chartTCRSub(); },
   comp: () => { chartCompensation(); chartConsumption(); },
