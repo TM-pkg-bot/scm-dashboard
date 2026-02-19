@@ -80,9 +80,36 @@
   }
   .kpi-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(25,118,210,0.15);
+  }
+  .kpi-accent1:hover {
+    box-shadow: 0 6px 20px rgba(25,118,210,0.18);
     border-color: var(--accent);
-    background: linear-gradient(135deg, rgba(25,118,210,0.03), rgba(25,118,210,0.06));
+    background: linear-gradient(135deg, rgba(25,118,210,0.03), rgba(25,118,210,0.07));
+  }
+  .kpi-accent2:hover {
+    box-shadow: 0 6px 20px rgba(46,125,50,0.18);
+    border-color: var(--accent2);
+    background: linear-gradient(135deg, rgba(46,125,50,0.03), rgba(46,125,50,0.07));
+  }
+  .kpi-accent3:hover {
+    box-shadow: 0 6px 20px rgba(230,81,0,0.18);
+    border-color: var(--accent3);
+    background: linear-gradient(135deg, rgba(230,81,0,0.03), rgba(230,81,0,0.07));
+  }
+  .kpi-accent4:hover {
+    box-shadow: 0 6px 20px rgba(198,40,40,0.18);
+    border-color: var(--accent4);
+    background: linear-gradient(135deg, rgba(198,40,40,0.03), rgba(198,40,40,0.07));
+  }
+  .kpi-accent5:hover {
+    box-shadow: 0 6px 20px rgba(123,31,162,0.18);
+    border-color: var(--accent5);
+    background: linear-gradient(135deg, rgba(123,31,162,0.03), rgba(123,31,162,0.07));
+  }
+  .kpi-accent6:hover {
+    box-shadow: 0 6px 20px rgba(158,158,158,0.2);
+    border-color: #9e9e9e;
+    background: linear-gradient(135deg, rgba(158,158,158,0.03), rgba(158,158,158,0.07));
   }
   .kpi-card .kpi-label {
     font-size: 11px;
@@ -144,6 +171,7 @@
   .kpi-accent3 { border-left: 3px solid var(--accent3); }
   .kpi-accent4 { border-left: 3px solid var(--accent4); }
   .kpi-accent5 { border-left: 3px solid var(--accent5); }
+  .kpi-accent6 { border-left: 3px solid #9e9e9e; }
 
   /* Section */
   .section {
@@ -383,6 +411,7 @@
 <!-- Tab Navigation -->
 <div class="tab-nav">
   <button class="tab-btn active" data-tab="summary">요약</button>
+  <button class="tab-btn" data-tab="ontime">원납기</button>
   <button class="tab-btn" data-tab="inventory">재고현황</button>
   <button class="tab-btn" data-tab="tcr">TCR</button>
   <button class="tab-btn" data-tab="comp">보상 / 사용소진</button>
@@ -396,6 +425,27 @@
     <button class="btn btn-download" onclick="downloadSection('summary')"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>엑셀 다운로드</button>
   </div>
   <div class="kpi-grid" id="kpiGrid"></div>
+</div>
+
+<!-- 원납기 -->
+<div class="tab-panel" id="panel-ontime">
+  <div class="toolbar">
+    <button class="btn btn-upload" onclick="document.getElementById('fileInput').click()"><svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>엑셀 업로드</button>
+    <button class="btn btn-download" onclick="downloadSection('ontime')"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>엑셀 다운로드</button>
+  </div>
+  <div class="section">
+    <div class="section-title">OKR - 부자재 원납기 준수율 <span class="tag">On-Time Delivery</span></div>
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>부자재 원납기 준수율 <span>(목표 vs 실적 vs 전년, %)</span></h3>
+        <div class="chart-container"><canvas id="chartOntime"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h3>원납기 미준수 건수</h3>
+        <div class="chart-container"><canvas id="chartOntimeCount"></canvas></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- 재고현황 -->
@@ -448,15 +498,15 @@
     <div class="section-title">OKR - 부동재고 <span class="tag">Idle Inventory</span></div>
     <div class="chart-grid">
       <div class="chart-box wide">
-        <h3>부동재고 목표 vs 실적 <span>(억원, SCM 전체)</span></h3>
+        <h3>부동재고 목표 vs 실적 vs 전년 <span>(억원, SCM 전체)</span></h3>
         <div class="chart-container"><canvas id="chartIdleInventory"></canvas></div>
       </div>
       <div class="chart-box">
-        <h3>원료 부동재고 목표 vs 실적 <span>(억원)</span></h3>
+        <h3>원료 부동재고 목표 vs 실적 vs 전년 <span>(억원)</span></h3>
         <div class="chart-container"><canvas id="chartIdleRaw"></canvas></div>
       </div>
       <div class="chart-box">
-        <h3>부자재 부동재고 목표 vs 실적 <span>(억원)</span></h3>
+        <h3>부자재 부동재고 목표 vs 실적 vs 전년 <span>(억원)</span></h3>
         <div class="chart-container"><canvas id="chartIdleSub"></canvas></div>
       </div>
     </div>
@@ -483,12 +533,18 @@
     <div class="section-title">OKR - TCR (Total Cost Reduction) <span class="tag">Cost Saving</span></div>
     <div class="chart-grid">
       <div class="chart-box">
-        <h3>TCR 전체 목표 vs 실적 <span>(억원)</span></h3>
+        <h3>TCR 전체 목표 vs 실적 vs 전년 <span>(억원)</span></h3>
         <div class="chart-container"><canvas id="chartTCR"></canvas></div>
       </div>
       <div class="chart-box">
-        <h3>TCR 원료 상세 <span>(억원, 인상/인하/대체)</span></h3>
+        <h3>TCR 원료 목표 vs 실적 vs 전년 <span>(억원)</span></h3>
         <div class="chart-container"><canvas id="chartTCRRaw"></canvas></div>
+      </div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>TCR 부자재 목표 vs 실적 vs 전년 <span>(억원)</span></h3>
+        <div class="chart-container"><canvas id="chartTCRSub"></canvas></div>
       </div>
     </div>
   </div>
@@ -504,11 +560,11 @@
     <div class="section-title">OKR - 보상 / 사용소진 <span class="tag">Compensation</span></div>
     <div class="chart-grid">
       <div class="chart-box">
-        <h3>보상 목표 vs 실적 <span>(억원)</span></h3>
+        <h3>보상 목표 vs 실적 vs 전년 <span>(억원)</span></h3>
         <div class="chart-container"><canvas id="chartCompensation"></canvas></div>
       </div>
       <div class="chart-box">
-        <h3>사용소진(부자재) 목표 vs 실적 <span>(억원)</span></h3>
+        <h3>사용소진(부자재) 목표 vs 실적 vs 전년 <span>(억원)</span></h3>
         <div class="chart-container"><canvas id="chartConsumption"></canvas></div>
       </div>
     </div>
@@ -522,19 +578,11 @@
     <button class="btn btn-download" onclick="downloadSection('etc')"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>엑셀 다운로드</button>
   </div>
   <div class="section">
-    <div class="section-title">자체폐기 / 원납기 <span class="tag">Disposal</span></div>
-    <div class="chart-grid cols-3">
+    <div class="section-title">자체폐기 <span class="tag">Disposal</span></div>
+    <div class="chart-grid">
       <div class="chart-box">
         <h3>자체폐기 실적 <span>(억원)</span></h3>
         <div class="chart-container"><canvas id="chartDisposal"></canvas></div>
-      </div>
-      <div class="chart-box">
-        <h3>원납기 준수율 <span>(%)</span></h3>
-        <div class="chart-container"><canvas id="chartOntime"></canvas></div>
-      </div>
-      <div class="chart-box">
-        <h3>원납기 미준수 건수</h3>
-        <div class="chart-container"><canvas id="chartOntimeCount"></canvas></div>
       </div>
     </div>
   </div>
@@ -601,10 +649,13 @@ const data = {
   idleSCM_target: [12150000000,13150000000,14150000000,13100000000,12600000000,12100000000,11600000000,11100000000,10600000000,10050000000,9550000000,9500000000],
   idleSCM_actual: [12239134021,0,0,0,0,0,0,0,0,0,0,0],
   idleSCM_prevFinal: 11540148501,
+  idleSCM_prev_m: [10303664055,10673167683,10723835703,10515201118,10122512785,10806806687,11773041396,12031730691,11848221221,12414305967,12386665296,11540148501],
   idleRaw_target: [2150000000,2150000000,2150000000,2100000000,2100000000,2100000000,2100000000,2100000000,2100000000,2050000000,2050000000,2000000000],
   idleRaw_actual: [2100737682,0,0,0,0,0,0,0,0,0,0,0],
+  idleRaw_prev_m: [2276536246,2321363444,2291806616,2095900965,2107524525,2474319246,2347511613,2768994004,2637735401,2715705185,2405037252,2124443212],
   idleSub_target: [10000000000,11000000000,12000000000,11000000000,10500000000,10000000000,9500000000,9000000000,8500000000,8000000000,7500000000,7500000000],
   idleSub_actual: [10138396339,0,0,0,0,0,0,0,0,0,0,0],
+  idleSub_prev_m: [8027127809,8351804239,8432029087,8419300153,8014988260,8332487441,9425529783,9262736687,9210485820,9698600782,9981628044,9415705289],
 
   // 재고회전일
   turnSCM_target: [34.77,34.02,33.27,33.27,32.52,32.27,31.52,31.52,30.76,30.64,29.89,29.01],
@@ -628,15 +679,21 @@ const data = {
   // TCR 부자재
   tcrSub_target: [250000000,250000000,250000000,300000000,350000000,350000000,350000000,350000000,300000000,250000000,250000000,250000000],
   tcrSub_actual: [200123337,0,0,0,0,0,0,0,0,0,0,0],
+  // TCR 전년 월별 실적 (SCM_25년)
+  tcrSCM_prev_m: [350535677,493712536,469159202,667810592,929399069,731901279,598363873,591743377,618755100,573029453,561599429,450127088],
+  tcrRaw_prev_m: [304068688,420688731,330173822,384246724,467788654,474557496,299705779,345291809,362637223,366145551,267245207,89394940],
+  tcrSub_prev_m: [46466989,73023805,138985380,283563868,461610415,257343783,298658094,246451568,256117877,206883902,294354222,360732148],
 
   // 보상
   compSCM_target: [175000000,175000000,180000000,230000000,230000000,230000000,230000000,230000000,230000000,230000000,230000000,180000000],
   compSCM_actual: [183214597,0,0,0,0,0,0,0,0,0,0,0],
   compSCM_prev: 3245354103,
+  compSCM_prev_m: [278215318,257326968,71227621,153955118,136952279,73858888,585549933,658625478,180317806,91472193,118406238,639446263],
   // 사용소진
   consSCM_target: [500000000,500000000,600000000,600000000,700000000,800000000,800000000,700000000,700000000,700000000,700000000,700000000],
   consSCM_actual: [911472251,0,0,0,0,0,0,0,0,0,0,0],
   consSCM_prev: 9716816559,
+  consSCM_prev_m: [554880781,810535540,900371862,776192810,923690938,746974595,717269906,545761499,752895014,744537551,1021348281,1222357782],
 
   // 자체폐기
   dispSCM:  { prev: 2167254576, m: [119964282,0,0,0,0,0,0,0,0,0,0,0] },
@@ -651,6 +708,7 @@ const data = {
   ontimeRaw_prev: 1.0,
   ontimeSub_actual: [0.9547,0,0,0,0,0,0,0,0,0,0,0],
   ontimeSub_prev: 0.9825,
+  ontimeSub_prev_m: [0.9494,0.9310,0.9300,0.9256,0.9129,0.9204,0.9563,0.9397,0.9677,0.9498,0.9382,0.9825],
   ontimeTotal: 1742,
   ontimeRawFail: 1,
   ontimeSubFail: 79,
@@ -724,19 +782,31 @@ function renderKPIs() {
 
   const kpis = [
     {
+      label: '원납기 준수율 (1월)',
+      value: pct(data.ontimeSCM_actual[0]),
+      sub: '목표 95.0% / 전년 ' + pct(data.ontimeSCM_prev),
+      badge: data.ontimeSCM_actual[0] >= 0.95 ? '목표 달성' : '미달',
+      badgeClass: data.ontimeSCM_actual[0] >= 0.95 ? 'badge-good' : 'badge-bad',
+      accent: 'kpi-accent2', icon: '⏱', tab: 'ontime',
+      detail: [
+        ['원료', pct(data.ontimeRaw_actual[0]) + ' (미준수 ' + data.ontimeRawFail + '건)'],
+        ['부자재', pct(data.ontimeSub_actual[0]) + ' (미준수 ' + data.ontimeSubFail + '건)'],
+      ]
+    },
+    {
       label: '총 재고금액 (1월)',
       value: toEok(data.scmInventory.m[0]) + '억',
       sub: '전년말 ' + toEok(data.scmInventory.prev) + '억 대비',
       badge: data.scmInventory.m[0] > data.scmInventory.prev ? '▲ 증가' : '▼ 감소',
       badgeClass: data.scmInventory.m[0] > data.scmInventory.prev ? 'badge-warn' : 'badge-good',
-      accent: 'kpi-accent1', icon: '📦', tab: 'inventory',
+      accent: 'kpi-accent4', icon: '📦', tab: 'inventory',
       detail: [
         ['원료', toEok(data.rawInventory.m[0]) + '억 (전년 ' + toEok(data.rawInventory.prev) + '억)'],
         ['부자재', toEok(data.subInventory.m[0]) + '억 (전년 ' + toEok(data.subInventory.prev) + '억)'],
       ]
     },
     {
-      label: '부동재고 달성률',
+      label: '부동재고 (1월)',
       value: pct(data.idleSCM_actual[0] / data.idleSCM_target[0]),
       sub: '목표 ' + toEok(data.idleSCM_target[0]) + '억 / 실적 ' + toEok(data.idleSCM_actual[0]) + '억',
       badge: data.idleSCM_actual[0] <= data.idleSCM_target[0] ? '목표 이내' : '목표 초과',
@@ -748,7 +818,7 @@ function renderKPIs() {
       ]
     },
     {
-      label: 'TCR 달성률 (1월)',
+      label: 'TCR (1월)',
       value: pct(data.tcrSCM_actual[0] / data.tcrSCM_target[0]),
       sub: '목표 ' + toEok(data.tcrSCM_target[0]) + '억 / 실적 ' + toEok(data.tcrSCM_actual[0]) + '억',
       badge: data.tcrSCM_actual[0] >= data.tcrSCM_target[0] ? '목표 달성' : '미달',
@@ -760,31 +830,19 @@ function renderKPIs() {
       ]
     },
     {
-      label: '원납기 준수율 (1월)',
-      value: pct(data.ontimeSCM_actual[0]),
-      sub: '목표 95.0% / 전년 ' + pct(data.ontimeSCM_prev),
-      badge: data.ontimeSCM_actual[0] >= 0.95 ? '목표 달성' : '미달',
-      badgeClass: data.ontimeSCM_actual[0] >= 0.95 ? 'badge-good' : 'badge-bad',
-      accent: 'kpi-accent5', icon: '⏱', tab: 'etc',
-      detail: [
-        ['원료', pct(data.ontimeRaw_actual[0]) + ' (미준수 ' + data.ontimeRawFail + '건)'],
-        ['부자재', pct(data.ontimeSub_actual[0]) + ' (미준수 ' + data.ontimeSubFail + '건)'],
-      ]
-    },
-    {
       label: '재고회전일 (1월)',
       value: data.turnSCM_actual[0].toFixed(1) + '일',
       sub: '목표 ' + data.turnSCM_target[0].toFixed(1) + '일 / 전년 ' + data.turnSCM_prev.toFixed(1) + '일',
       badge: data.turnSCM_actual[0] <= data.turnSCM_target[0] ? '목표 달성' : '개선 필요',
       badgeClass: data.turnSCM_actual[0] <= data.turnSCM_target[0] ? 'badge-good' : 'badge-warn',
-      accent: 'kpi-accent1', icon: '🔄', tab: 'inventory',
+      accent: 'kpi-accent2', icon: '🔄', tab: 'inventory',
       detail: [
         ['원료', data.turnRaw_actual[0].toFixed(1) + '일 (목표 ' + data.turnRaw_target[0].toFixed(1) + '일)'],
         ['부자재', data.turnSub_actual[0].toFixed(1) + '일 (목표 ' + data.turnSub_target[0].toFixed(1) + '일)'],
       ]
     },
     {
-      label: '보상 달성률 (1월)',
+      label: '보상/사용소진 (1월)',
       value: pct(data.compSCM_actual[0] / data.compSCM_target[0]),
       sub: '목표 ' + toEok1(data.compSCM_target[0]) + '억 / 실적 ' + toEok1(data.compSCM_actual[0]) + '억',
       badge: data.compSCM_actual[0] >= data.compSCM_target[0] ? '목표 달성' : '미달',
@@ -814,7 +872,7 @@ function renderKPIs() {
       sub: '전년 월평균 ' + num(Math.round(data.orderTotal.prev / 12)) + '건',
       badge: data.orderTotal.m[0] > data.orderTotal.prev / 12 ? '▲ 증가' : '▼ 감소',
       badgeClass: 'badge-warn',
-      accent: 'kpi-accent4', icon: '📋', tab: 'etc',
+      accent: 'kpi-accent6', icon: '📋', tab: 'etc',
       detail: [
         ['원료', num(data.orderRaw.m[0]) + '건 (전년 월평균 ' + num(Math.round(data.orderRaw.prev/12)) + '건)'],
         ['부자재', num(data.orderSub.m[0]) + '건 (전년 월평균 ' + num(Math.round(data.orderSub.prev/12)) + '건)'],
@@ -1104,37 +1162,14 @@ function chartIdleInventory() {
     data: {
       labels: months,
       datasets: [
-        {
-          label: '목표',
-          data: data.idleSCM_target.map(v => +(v/B).toFixed(1)),
-          backgroundColor: 'rgba(79,195,247,0.3)',
-          borderColor: 'rgba(79,195,247,0.8)',
-          borderWidth: 1,
-          borderRadius: 4,
-          barPercentage: 0.7,
-        },
-        {
-          label: '실적',
-          data: data.idleSCM_actual.map(v => v ? +(v/B).toFixed(1) : null),
-          backgroundColor: 'rgba(239,83,80,0.7)',
-          borderRadius: 4,
-          barPercentage: 0.7,
-        },
-        {
-          label: '전년말',
-          data: months.map(() => +(data.idleSCM_prevFinal/B).toFixed(1)),
-          type: 'line',
-          borderColor: 'rgba(186,104,200,0.8)',
-          borderDash: [6,3],
-          pointRadius: 0,
-          borderWidth: 2,
-          fill: false,
-        }
+        { label: '목표', data: data.idleSCM_target.map(v => +(v/B).toFixed(1)), backgroundColor: 'rgba(79,195,247,0.3)', borderColor: 'rgba(79,195,247,0.8)', borderWidth: 1, borderRadius: 4, barPercentage: 0.5 },
+        { label: '실적', data: data.idleSCM_actual.map(v => v ? +(v/B).toFixed(1) : null), backgroundColor: 'rgba(239,83,80,0.7)', borderRadius: 4, barPercentage: 0.5 },
+        { label: '전년실적', data: data.idleSCM_prev_m.map(v => +(v/B).toFixed(1)), type: 'line', borderColor: 'rgba(255,152,0,0.8)', backgroundColor: 'rgba(255,152,0,0.1)', pointRadius: 3, pointBackgroundColor: 'rgba(255,152,0,0.8)', borderWidth: 2, borderDash: [4,2], fill: false }
       ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'top' },
+      plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'rectRounded' } },
         tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y + '억원' } }
       },
       scales: { y: { title: { display: true, text: '억원' } } }
@@ -1149,11 +1184,12 @@ function chartIdleRaw() {
     data: {
       labels: months,
       datasets: [
-        { label: '목표', data: data.idleRaw_target.map(v => +(v/B).toFixed(1)), backgroundColor: 'rgba(79,195,247,0.3)', borderColor: 'rgba(79,195,247,0.7)', borderWidth: 1, borderRadius: 4, barPercentage: 0.6 },
-        { label: '실적', data: data.idleRaw_actual.map(v => v ? +(v/B).toFixed(1) : null), backgroundColor: 'rgba(129,199,132,0.7)', borderRadius: 4, barPercentage: 0.6 }
+        { label: '목표', data: data.idleRaw_target.map(v => +(v/B).toFixed(1)), backgroundColor: 'rgba(79,195,247,0.3)', borderColor: 'rgba(79,195,247,0.7)', borderWidth: 1, borderRadius: 4, barPercentage: 0.5 },
+        { label: '실적', data: data.idleRaw_actual.map(v => v ? +(v/B).toFixed(1) : null), backgroundColor: 'rgba(129,199,132,0.7)', borderRadius: 4, barPercentage: 0.5 },
+        { label: '전년실적', data: data.idleRaw_prev_m.map(v => +(v/B).toFixed(1)), type: 'line', borderColor: 'rgba(255,152,0,0.8)', backgroundColor: 'rgba(255,152,0,0.1)', pointRadius: 3, pointBackgroundColor: 'rgba(255,152,0,0.8)', borderWidth: 2, borderDash: [4,2], fill: false }
       ]
     },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { title: { display: true, text: '억원' } } } }
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'rectRounded' } } }, scales: { y: { title: { display: true, text: '억원' } } } }
   });
 }
 
@@ -1164,11 +1200,12 @@ function chartIdleSub() {
     data: {
       labels: months,
       datasets: [
-        { label: '목표', data: data.idleSub_target.map(v => +(v/B).toFixed(1)), backgroundColor: 'rgba(79,195,247,0.3)', borderColor: 'rgba(79,195,247,0.7)', borderWidth: 1, borderRadius: 4, barPercentage: 0.6 },
-        { label: '실적', data: data.idleSub_actual.map(v => v ? +(v/B).toFixed(1) : null), backgroundColor: 'rgba(255,183,77,0.7)', borderRadius: 4, barPercentage: 0.6 }
+        { label: '목표', data: data.idleSub_target.map(v => +(v/B).toFixed(1)), backgroundColor: 'rgba(79,195,247,0.3)', borderColor: 'rgba(79,195,247,0.7)', borderWidth: 1, borderRadius: 4, barPercentage: 0.5 },
+        { label: '실적', data: data.idleSub_actual.map(v => v ? +(v/B).toFixed(1) : null), backgroundColor: 'rgba(255,183,77,0.7)', borderRadius: 4, barPercentage: 0.5 },
+        { label: '전년실적', data: data.idleSub_prev_m.map(v => +(v/B).toFixed(1)), type: 'line', borderColor: 'rgba(255,152,0,0.8)', backgroundColor: 'rgba(255,152,0,0.1)', pointRadius: 3, pointBackgroundColor: 'rgba(255,152,0,0.8)', borderWidth: 2, borderDash: [4,2], fill: false }
       ]
     },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { title: { display: true, text: '억원' } } } }
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'rectRounded' } } }, scales: { y: { title: { display: true, text: '억원' } } } }
   });
 }
 
@@ -1202,34 +1239,47 @@ function chartTCR() {
     data: {
       labels: months,
       datasets: [
-        { label: '목표', data: data.tcrSCM_target.map(v => +(v/B).toFixed(1)), backgroundColor: 'rgba(79,195,247,0.3)', borderColor: 'rgba(79,195,247,0.7)', borderWidth: 1, borderRadius: 4, barPercentage: 0.6 },
-        { label: '실적', data: data.tcrSCM_actual.map(v => v ? +(v/B).toFixed(1) : null), backgroundColor: 'rgba(129,199,132,0.7)', borderRadius: 4, barPercentage: 0.6 }
+        { label: '목표', data: data.tcrSCM_target.map(v => +(v/B).toFixed(1)), backgroundColor: 'rgba(79,195,247,0.3)', borderColor: 'rgba(79,195,247,0.7)', borderWidth: 1, borderRadius: 4, barPercentage: 0.5 },
+        { label: '실적', data: data.tcrSCM_actual.map(v => v ? +(v/B).toFixed(1) : null), backgroundColor: 'rgba(129,199,132,0.7)', borderRadius: 4, barPercentage: 0.5 },
+        { label: '전년실적', data: data.tcrSCM_prev_m.map(v => +(v/B).toFixed(1)), type: 'line', borderColor: 'rgba(255,152,0,0.8)', backgroundColor: 'rgba(255,152,0,0.1)', pointRadius: 3, pointBackgroundColor: 'rgba(255,152,0,0.8)', borderWidth: 2, borderDash: [4,2], fill: false }
       ]
     },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { title: { display: true, text: '억원' } } } }
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'rectRounded' } } }, scales: { y: { title: { display: true, text: '억원' } } } }
   });
 }
 
-// TCR 원료 상세
+// TCR 원료
 function chartTCRRaw() {
   new Chart(document.getElementById('chartTCRRaw'), {
     type: 'bar',
     data: {
       labels: months,
       datasets: [
-        { label: '단가인하', data: data.tcrRaw_down.map(v => v ? +(v/B).toFixed(1) : null), backgroundColor: 'rgba(129,199,132,0.7)', borderRadius: 4, stack: 'actual' },
-        { label: '대체실적', data: data.tcrRaw_alt.map(v => v ? +(v/B).toFixed(1) : null), backgroundColor: 'rgba(79,195,247,0.7)', borderRadius: 4, stack: 'actual' },
-        { label: '단가인상(-)', data: data.tcrRaw_up.map(v => v ? -(v/B).toFixed(1) : null), backgroundColor: 'rgba(239,83,80,0.7)', borderRadius: 4, stack: 'actual' },
-        { label: '목표', data: data.tcrRaw_target.map(v => +(v/B).toFixed(1)), type: 'line', borderColor: 'rgba(255,183,77,0.8)', borderDash: [4,2], pointRadius: 3, borderWidth: 2, fill: false }
+        { label: '목표', data: data.tcrRaw_target.map(v => +(v/B).toFixed(1)), backgroundColor: 'rgba(79,195,247,0.3)', borderColor: 'rgba(79,195,247,0.7)', borderWidth: 1, borderRadius: 4, barPercentage: 0.5 },
+        { label: '실적', data: data.tcrRaw_actual.map(v => v ? +(v/B).toFixed(1) : null), backgroundColor: 'rgba(129,199,132,0.7)', borderRadius: 4, barPercentage: 0.5 },
+        { label: '전년실적', data: data.tcrRaw_prev_m.map(v => +(v/B).toFixed(1)), type: 'line', borderColor: 'rgba(255,152,0,0.8)', backgroundColor: 'rgba(255,152,0,0.1)', pointRadius: 3, pointBackgroundColor: 'rgba(255,152,0,0.8)', borderWidth: 2, borderDash: [4,2], fill: false }
       ]
     },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'top' } },
-      scales: { y: { title: { display: true, text: '억원' }, stacked: true } }
-    }
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'rectRounded' } } }, scales: { y: { title: { display: true, text: '억원' } } } }
   });
 }
+
+// TCR 부자재
+function chartTCRSub() {
+  new Chart(document.getElementById('chartTCRSub'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        { label: '목표', data: data.tcrSub_target.map(v => +(v/B).toFixed(1)), backgroundColor: 'rgba(79,195,247,0.3)', borderColor: 'rgba(79,195,247,0.7)', borderWidth: 1, borderRadius: 4, barPercentage: 0.5 },
+        { label: '실적', data: data.tcrSub_actual.map(v => v ? +(v/B).toFixed(1) : null), backgroundColor: 'rgba(129,199,132,0.7)', borderRadius: 4, barPercentage: 0.5 },
+        { label: '전년실적', data: data.tcrSub_prev_m.map(v => +(v/B).toFixed(1)), type: 'line', borderColor: 'rgba(255,152,0,0.8)', backgroundColor: 'rgba(255,152,0,0.1)', pointRadius: 3, pointBackgroundColor: 'rgba(255,152,0,0.8)', borderWidth: 2, borderDash: [4,2], fill: false }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'rectRounded' } } }, scales: { y: { title: { display: true, text: '억원' } } } }
+  });
+}
+
 
 // 보상
 function chartCompensation() {
@@ -1238,11 +1288,12 @@ function chartCompensation() {
     data: {
       labels: months,
       datasets: [
-        { label: '목표', data: data.compSCM_target.map(v => +(v/B).toFixed(2)), backgroundColor: 'rgba(79,195,247,0.3)', borderColor: 'rgba(79,195,247,0.7)', borderWidth: 1, borderRadius: 4, barPercentage: 0.6 },
-        { label: '실적', data: data.compSCM_actual.map(v => v ? +(v/B).toFixed(2) : null), backgroundColor: 'rgba(186,104,200,0.7)', borderRadius: 4, barPercentage: 0.6 }
+        { label: '목표', data: data.compSCM_target.map(v => +(v/B).toFixed(2)), backgroundColor: 'rgba(79,195,247,0.3)', borderColor: 'rgba(79,195,247,0.7)', borderWidth: 1, borderRadius: 4, barPercentage: 0.5 },
+        { label: '실적', data: data.compSCM_actual.map(v => v ? +(v/B).toFixed(2) : null), backgroundColor: 'rgba(186,104,200,0.7)', borderRadius: 4, barPercentage: 0.5 },
+        { label: '전년실적', data: data.compSCM_prev_m.map(v => +(v/B).toFixed(2)), type: 'line', borderColor: 'rgba(255,152,0,0.8)', backgroundColor: 'rgba(255,152,0,0.1)', pointRadius: 3, pointBackgroundColor: 'rgba(255,152,0,0.8)', borderWidth: 2, borderDash: [4,2], fill: false }
       ]
     },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { title: { display: true, text: '억원' } } } }
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'rectRounded' } } }, scales: { y: { title: { display: true, text: '억원' } } } }
   });
 }
 
@@ -1253,11 +1304,12 @@ function chartConsumption() {
     data: {
       labels: months,
       datasets: [
-        { label: '목표', data: data.consSCM_target.map(v => +(v/B).toFixed(1)), backgroundColor: 'rgba(79,195,247,0.3)', borderColor: 'rgba(79,195,247,0.7)', borderWidth: 1, borderRadius: 4, barPercentage: 0.6 },
-        { label: '실적', data: data.consSCM_actual.map(v => v ? +(v/B).toFixed(1) : null), backgroundColor: 'rgba(255,183,77,0.7)', borderRadius: 4, barPercentage: 0.6 }
+        { label: '목표', data: data.consSCM_target.map(v => +(v/B).toFixed(1)), backgroundColor: 'rgba(79,195,247,0.3)', borderColor: 'rgba(79,195,247,0.7)', borderWidth: 1, borderRadius: 4, barPercentage: 0.5 },
+        { label: '실적', data: data.consSCM_actual.map(v => v ? +(v/B).toFixed(1) : null), backgroundColor: 'rgba(255,183,77,0.7)', borderRadius: 4, barPercentage: 0.5 },
+        { label: '전년실적', data: data.consSCM_prev_m.map(v => +(v/B).toFixed(1)), type: 'line', borderColor: 'rgba(255,152,0,0.8)', backgroundColor: 'rgba(255,152,0,0.1)', pointRadius: 3, pointBackgroundColor: 'rgba(255,152,0,0.8)', borderWidth: 2, borderDash: [4,2], fill: false }
       ]
     },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { title: { display: true, text: '억원' } } } }
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'rectRounded' } } }, scales: { y: { title: { display: true, text: '억원' } } } }
   });
 }
 
@@ -1280,23 +1332,22 @@ function chartDisposal() {
   });
 }
 
-// 원납기 준수율
+// 부자재 원납기 준수율
 function chartOntime() {
   new Chart(document.getElementById('chartOntime'), {
     type: 'bar',
     data: {
       labels: months,
       datasets: [
-        { label: 'SCM 전체', data: data.ontimeSCM_actual.map(v => v ? +(v*100).toFixed(1) : null), backgroundColor: 'rgba(79,195,247,0.7)', borderRadius: 4, barPercentage: 0.5 },
-        { label: '원료', data: data.ontimeRaw_actual.map(v => v ? +(v*100).toFixed(1) : null), backgroundColor: 'rgba(129,199,132,0.7)', borderRadius: 4, barPercentage: 0.5 },
-        { label: '부자재', data: data.ontimeSub_actual.map(v => v ? +(v*100).toFixed(1) : null), backgroundColor: 'rgba(255,183,77,0.7)', borderRadius: 4, barPercentage: 0.5 },
-        { label: '목표(95%)', data: months.map(() => 95), type: 'line', borderColor: 'rgba(239,83,80,0.8)', borderDash: [6,3], pointRadius: 0, borderWidth: 2, fill: false }
+        { label: '실적', data: data.ontimeSub_actual.map(v => v ? +(v*100).toFixed(1) : null), backgroundColor: 'rgba(129,199,132,0.7)', borderRadius: 4, barPercentage: 0.5 },
+        { label: '목표(95%)', data: months.map(() => 95), type: 'line', borderColor: 'rgba(239,83,80,0.8)', borderDash: [6,3], pointRadius: 0, borderWidth: 2, fill: false },
+        { label: '전년실적', data: data.ontimeSub_prev_m.map(v => +(v*100).toFixed(1)), type: 'line', borderColor: 'rgba(255,152,0,0.8)', backgroundColor: 'rgba(255,152,0,0.1)', pointRadius: 3, pointBackgroundColor: 'rgba(255,152,0,0.8)', borderWidth: 2, borderDash: [4,2], fill: false }
       ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'top' } },
-      scales: { y: { min: 90, max: 101, title: { display: true, text: '%' } } }
+      plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'rectRounded' } } },
+      scales: { y: { min: 88, max: 101, title: { display: true, text: '%' } } }
     }
   });
 }
@@ -1425,10 +1476,11 @@ function chartHeadcount() {
 // ===== TAB SYSTEM =====
 const tabInits = {
   summary: () => { renderKPIs(); },
+  ontime: () => { chartOntime(); chartOntimeCount(); },
   inventory: () => { chartInventoryTotal(); chartInvRaw(); chartInvSub(); chartInventoryCompo(); chartCompoRaw(); chartCompoSub(); chartPurchaseRelease(); chartIdleInventory(); chartIdleRaw(); chartIdleSub(); chartTurnover(); },
-  tcr: () => { chartTCR(); chartTCRRaw(); },
+  tcr: () => { chartTCR(); chartTCRRaw(); chartTCRSub(); },
   comp: () => { chartCompensation(); chartConsumption(); },
-  etc: () => { chartDisposal(); chartOntime(); chartOntimeCount(); chartOverseas(); chartOrders(); chartHeadcount(); },
+  etc: () => { chartDisposal(); chartOverseas(); chartOrders(); chartHeadcount(); },
 };
 const initialized = {};
 
@@ -1509,13 +1561,16 @@ function downloadSection(section) {
     const rows = [hdr,
       ['TCR 목표','SCM',,...data.tcrSCM_target.map(v=>+(v/B).toFixed(1))],
       ['TCR 실적','SCM',+(data.tcrSCM_prevFinal/B).toFixed(1),...data.tcrSCM_actual.map(v=>v?+(v/B).toFixed(1):'')],
+      ['TCR 전년실적','SCM',,...data.tcrSCM_prev_m.map(v=>+(v/B).toFixed(1))],
       ['','원료 목표',,...data.tcrRaw_target.map(v=>+(v/B).toFixed(1))],
       ['','원료 실적',,...data.tcrRaw_actual.map(v=>v?+(v/B).toFixed(1):'')],
+      ['','원료 전년실적',,...data.tcrRaw_prev_m.map(v=>+(v/B).toFixed(1))],
       ['','원료 인상',,...data.tcrRaw_up.map(v=>v?+(v/B).toFixed(1):'')],
       ['','원료 인하',,...data.tcrRaw_down.map(v=>v?+(v/B).toFixed(1):'')],
       ['','원료 대체',,...data.tcrRaw_alt.map(v=>v?+(v/B).toFixed(1):'')],
       ['','부자재 목표',,...data.tcrSub_target.map(v=>+(v/B).toFixed(1))],
       ['','부자재 실적',,...data.tcrSub_actual.map(v=>v?+(v/B).toFixed(1):'')],
+      ['','부자재 전년실적',,...data.tcrSub_prev_m.map(v=>+(v/B).toFixed(1))],
     ];
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'TCR');
   }
@@ -1524,18 +1579,16 @@ function downloadSection(section) {
     const rows = [hdr,
       ['보상 목표','SCM',,...data.compSCM_target.map(v=>+(v/B).toFixed(2))],
       ['보상 실적','SCM',+(data.compSCM_prev/B).toFixed(1),...data.compSCM_actual.map(v=>v?+(v/B).toFixed(2):'')],
+      ['보상 전년실적','SCM',,...data.compSCM_prev_m.map(v=>+(v/B).toFixed(2))],
       ['사용소진 목표','SCM(부자재)',,...data.consSCM_target.map(v=>+(v/B).toFixed(1))],
       ['사용소진 실적','SCM(부자재)',+(data.consSCM_prev/B).toFixed(1),...data.consSCM_actual.map(v=>v?+(v/B).toFixed(1):'')],
+      ['사용소진 전년실적','SCM(부자재)',,...data.consSCM_prev_m.map(v=>+(v/B).toFixed(1))],
     ];
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), '보상_사용소진');
   }
 
-  if (section === 'etc') {
+  if (section === 'ontime') {
     const rows = [hdr,
-      ['자체폐기','SCM',+(data.dispSCM.prev/B).toFixed(1),...data.dispSCM.m.map(v=>v?+(v/B).toFixed(2):'')],
-      ['','원료',+(data.dispRaw.prev/B).toFixed(1),...data.dispRaw.m.map(v=>v?+(v/B).toFixed(2):'')],
-      ['','부자재',+(data.dispSub.prev/B).toFixed(1),...data.dispSub.m.map(v=>v?+(v/B).toFixed(2):'')],
-      [],
       ['원납기준수율','목표',,...M.map(()=>data.ontimeSCM_target)],
       ['','SCM실적',data.ontimeSCM_prev,...data.ontimeSCM_actual.map(v=>v||'')],
       ['','원료실적',data.ontimeRaw_prev,...data.ontimeRaw_actual.map(v=>v||'')],
@@ -1543,6 +1596,15 @@ function downloadSection(section) {
       ['','전체건수',,...[data.ontimeTotal,...Array(11).fill('')]],
       ['','원료미준수',,...[data.ontimeRawFail,...Array(11).fill('')]],
       ['','부자재미준수',,...[data.ontimeSubFail,...Array(11).fill('')]],
+    ];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), '원납기');
+  }
+
+  if (section === 'etc') {
+    const rows = [hdr,
+      ['자체폐기','SCM',+(data.dispSCM.prev/B).toFixed(1),...data.dispSCM.m.map(v=>v?+(v/B).toFixed(2):'')],
+      ['','원료',+(data.dispRaw.prev/B).toFixed(1),...data.dispRaw.m.map(v=>v?+(v/B).toFixed(2):'')],
+      ['','부자재',+(data.dispSub.prev/B).toFixed(1),...data.dispSub.m.map(v=>v?+(v/B).toFixed(2):'')],
       [],
       ['해외법인','상해',+(data.overseasActual.shanghai.prev/B).toFixed(1),...data.overseasActual.shanghai.m.map(v=>v?+(v/B).toFixed(1):'')],
       ['','광저우',+(data.overseasActual.guangzhou.prev/B).toFixed(1),...data.overseasActual.guangzhou.m.map(v=>v?+(v/B).toFixed(1):'')],
@@ -1557,7 +1619,7 @@ function downloadSection(section) {
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), '기타');
   }
 
-  const sectionNames = { summary:'요약', inventory:'재고현황', tcr:'TCR', comp:'보상_소진', etc:'기타' };
+  const sectionNames = { summary:'요약', ontime:'원납기', inventory:'재고현황', tcr:'TCR', comp:'보상_소진', etc:'기타' };
   XLSX.writeFile(wb, 'SCM_Dashboard_' + sectionNames[section] + '.xlsx');
 }
 
